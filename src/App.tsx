@@ -29,22 +29,24 @@ type GameInfo = {
   key: GameKey
   title: string
   description: string
+  icon: string
+  level: string
 }
 
 const gameInfo: GameInfo[] = [
-  { key: 'math', title: 'Math Quest', description: '100+ number puzzles.' },
-  { key: 'science', title: 'Science Lab', description: '100+ curious facts.' },
-  { key: 'memory', title: 'Memory Match', description: '100+ matching boards.' },
-  { key: 'patterns', title: 'Pattern Pop', description: '100+ pattern rounds.' },
-  { key: 'spelling', title: 'Word Builder', description: '100+ picture words.' },
-  { key: 'colors', title: 'Color Quest', description: '100+ color taps.' },
-  { key: 'counting', title: 'Counting Stars', description: '100+ count games.' },
-  { key: 'shapes', title: 'Shape Safari', description: 'Easy shape practice.' },
-  { key: 'animals', title: 'Animal Sounds', description: 'Match animals and sounds.' },
-  { key: 'bigger', title: 'Bigger or Smaller', description: 'Compare friendly objects.' },
-  { key: 'riddles', title: 'Riddle Rocket', description: 'Brain teasers for all ages.' },
-  { key: 'puzzles', title: 'Puzzle Portal', description: 'Logic and clue puzzles.' },
-  { key: 'snake', title: 'Rainbow Snake', description: 'Slither, collect gems, grow.' },
+  { key: 'math', title: 'Math Quest', description: 'Fast number puzzles with random answers.', icon: '🧮', level: 'Ages 5+' },
+  { key: 'snake', title: 'Rainbow Snake', description: 'Arcade action: collect gems and grow.', icon: '🐍', level: 'All ages' },
+  { key: 'puzzles', title: 'Puzzle Portal', description: 'Slide tiles into the right order.', icon: '🧩', level: 'Ages 6+' },
+  { key: 'science', title: 'Science Lab', description: 'Curious facts about nature and space.', icon: '🔬', level: 'Ages 6+' },
+  { key: 'memory', title: 'Memory Match', description: 'Flip cards and find matching pairs.', icon: '🧠', level: 'Ages 3+' },
+  { key: 'patterns', title: 'Pattern Pop', description: 'Spot what comes next.', icon: '✨', level: 'Ages 4+' },
+  { key: 'spelling', title: 'Word Builder', description: 'Match pictures to easy words.', icon: '📚', level: 'Ages 4+' },
+  { key: 'colors', title: 'Color Quest', description: 'Tap the color that matches.', icon: '🎨', level: 'Ages 2+' },
+  { key: 'counting', title: 'Counting Stars', description: 'Count friendly objects on screen.', icon: '⭐', level: 'Ages 2+' },
+  { key: 'shapes', title: 'Shape Safari', description: 'Learn circles, squares, stars, and more.', icon: '🔺', level: 'Ages 2+' },
+  { key: 'animals', title: 'Animal Sounds', description: 'Match animals with their sounds.', icon: '🦁', level: 'Ages 2+' },
+  { key: 'bigger', title: 'Bigger or Smaller', description: 'Compare numbers and objects.', icon: '📏', level: 'Ages 4+' },
+  { key: 'riddles', title: 'Riddle Rocket', description: 'Brain teasers for older kids and adults.', icon: '🚀', level: 'Ages 8+' },
 ]
 
 function numberChoices(correct: number): string[] {
@@ -519,18 +521,41 @@ function App() {
         </div>
       </section>
 
-      <section className="game-picker" id="games" aria-label="Choose a game">
-        {gameInfo.map((game) => (
-          <button
-            key={game.key}
-            className={selectedGame === game.key ? 'game-tab active' : 'game-tab'}
-            onClick={() => chooseGame(game.key)}
-            type="button"
-          >
-            <strong>{game.title}</strong>
-            <span>{game.description}</span>
-          </button>
-        ))}
+      <section className="game-library" id="games" aria-labelledby="game-library-title">
+        <div className="library-heading">
+          <div>
+            <p className="eyebrow">Game Library</p>
+            <h2 id="game-library-title">Pick a game, then play instantly.</h2>
+          </div>
+          <p>Swipe the cards, tap a game, and Aaron Playground jumps you right to the play area.</p>
+        </div>
+
+        <div className="selected-game-strip" aria-live="polite">
+          <span className="selected-icon">{currentInfo.icon}</span>
+          <div>
+            <strong>Now playing: {currentInfo.title}</strong>
+            <span>{currentInfo.description}</span>
+          </div>
+          <button type="button" onClick={() => playPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Play now</button>
+        </div>
+
+        <div className="game-picker" aria-label="Choose a game">
+          {gameInfo.map((game) => (
+            <button
+              key={game.key}
+              className={selectedGame === game.key ? 'game-tab active' : 'game-tab'}
+              onClick={() => chooseGame(game.key)}
+              type="button"
+            >
+              <span className="game-icon" aria-hidden="true">{game.icon}</span>
+              <span className="game-card-copy">
+                <strong>{game.title}</strong>
+                <span>{game.description}</span>
+              </span>
+              <span className="game-level">{game.level}</span>
+            </button>
+          ))}
+        </div>
       </section>
 
       <p className="status" role="status">{message}</p>
