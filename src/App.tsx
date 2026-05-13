@@ -207,8 +207,8 @@ function getRounds(key: GameKey): ChoiceRound[] {
 
 function App() {
   const [selectedGame, setSelectedGame] = useState<GameKey>('math')
-  const [roundIndexes, setRoundIndexes] = useState<Record<Exclude<GameKey, 'memory'>, number>>({
-    math: 0,
+  const [roundIndexes, setRoundIndexes] = useState<Record<Exclude<GameKey, 'memory'>, number>>(() => ({
+    math: Math.floor(Math.random() * mathQuestions.length),
     science: 0,
     patterns: 0,
     spelling: 0,
@@ -217,7 +217,7 @@ function App() {
     shapes: 0,
     animals: 0,
     bigger: 0,
-  })
+  }))
   const [memoryBoardIndex, setMemoryBoardIndex] = useState(0)
   const [message, setMessage] = useState('Pick a game and start playing!')
   const [hasParentAgreement, setHasParentAgreement] = useState(false)
@@ -233,7 +233,13 @@ function App() {
     const index = roundIndexes[game]
     const current = rounds[index]
     setMessage(choice === current.correct ? 'Awesome answer! 🌟' : `Good try! The answer was ${current.correct}.`)
-    setRoundIndexes((currentIndexes) => ({ ...currentIndexes, [game]: (index + 1) % rounds.length }))
+    setRoundIndexes((currentIndexes) => {
+      if (game !== 'math') return { ...currentIndexes, [game]: (index + 1) % rounds.length }
+
+      let nextMathIndex = Math.floor(Math.random() * rounds.length)
+      if (rounds.length > 1 && nextMathIndex === index) nextMathIndex = (nextMathIndex + 1) % rounds.length
+      return { ...currentIndexes, math: nextMathIndex }
+    })
   }
 
   function flipCard(index: number) {
