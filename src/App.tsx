@@ -205,10 +205,28 @@ function getRounds(key: GameKey): ChoiceRound[] {
   return rounds[key as Exclude<GameKey, 'memory'>]
 }
 
+function randomIndex(max: number): number {
+  const values = new Uint32Array(1)
+  globalThis.crypto.getRandomValues(values)
+  return values[0] % max
+}
+
+function shuffleAnswers(answers: string[]): string[] {
+  const shuffled = [...answers]
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomIndex(index + 1)
+    const temp = shuffled[index]
+    shuffled[index] = shuffled[swapIndex]
+    shuffled[swapIndex] = temp
+  }
+  return shuffled
+}
+
 function App() {
   const [selectedGame, setSelectedGame] = useState<GameKey>('math')
+  const [mathStartIndex] = useState(() => randomIndex(mathQuestions.length))
   const [roundIndexes, setRoundIndexes] = useState<Record<Exclude<GameKey, 'memory'>, number>>(() => ({
-    math: Math.floor(Math.random() * mathQuestions.length),
+    math: mathStartIndex,
     science: 0,
     patterns: 0,
     spelling: 0,
@@ -217,6 +235,17 @@ function App() {
     shapes: 0,
     animals: 0,
     bigger: 0,
+  }))
+  const [answerOrders, setAnswerOrders] = useState<Record<Exclude<GameKey, 'memory'>, string[]>>(() => ({
+    math: shuffleAnswers(mathQuestions[mathStartIndex].answers),
+    science: shuffleAnswers(scienceQuestions[0].answers),
+    patterns: shuffleAnswers(patternRounds[0].answers),
+    spelling: shuffleAnswers(spellingRounds[0].answers),
+    colors: shuffleAnswers(colorRounds[0].answers),
+    counting: shuffleAnswers(countingRounds[0].answers),
+    shapes: shuffleAnswers(shapeRounds[0].answers),
+    animals: shuffleAnswers(animalRounds[0].answers),
+    bigger: shuffleAnswers(biggerRounds[0].answers),
   }))
   const [memoryBoardIndex, setMemoryBoardIndex] = useState(0)
   const [message, setMessage] = useState('Pick a game and start playing!')
@@ -232,14 +261,16 @@ function App() {
     const rounds = getRounds(game)
     const index = roundIndexes[game]
     const current = rounds[index]
-    setMessage(choice === current.correct ? 'Awesome answer! 🌟' : `Good try! The answer was ${current.correct}.`)
-    setRoundIndexes((currentIndexes) => {
-      if (game !== 'math') return { ...currentIndexes, [game]: (index + 1) % rounds.length }
+    let nextIndex = (index + 1) % rounds.length
 
-      let nextMathIndex = Math.floor(Math.random() * rounds.length)
-      if (rounds.length > 1 && nextMathIndex === index) nextMathIndex = (nextMathIndex + 1) % rounds.length
-      return { ...currentIndexes, math: nextMathIndex }
-    })
+    if (game === 'math') {
+      nextIndex = randomIndex(rounds.length)
+      if (rounds.length > 1 && nextIndex === index) nextIndex = (nextIndex + 1) % rounds.length
+    }
+
+    setMessage(choice === current.correct ? 'Awesome answer! 🌟' : `Good try! The answer was ${current.correct}.`)
+    setRoundIndexes((currentIndexes) => ({ ...currentIndexes, [game]: nextIndex }))
+    setAnswerOrders((currentOrders) => ({ ...currentOrders, [game]: shuffleAnswers(rounds[nextIndex].answers) }))
   }
 
   function flipCard(index: number) {
@@ -277,7 +308,7 @@ function App() {
         <h2>{currentInfo.title}</h2>
         <p className={game === 'counting' ? 'question counting-question' : 'question'}>{round.prompt}</p>
         <div className="answer-grid">
-          {round.answers.map((answer) => (
+          {(answerOrders[game] ?? round.answers).map((answer) => (
             <button key={answer} onClick={() => answerRound(game, answer)} type="button">{answer}</button>
           ))}
         </div>
