@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './App.css'
 
 type GameKey =
@@ -291,6 +291,7 @@ function App() {
   const [fullScreenGame, setFullScreenGame] = useState<GameKey | null>(null)
   const [puzzleTiles, setPuzzleTiles] = useState([1, 2, 3, 4, 5, 6, 7, 8, 0])
   const [puzzleMoves, setPuzzleMoves] = useState(0)
+  const playPanelRef = useRef<HTMLElement | null>(null)
 
   const currentBoard = memoryBoards[memoryBoardIndex]
   const currentInfo = gameInfo.find((game) => game.key === selectedGame) ?? gameInfo[0]
@@ -306,6 +307,14 @@ function App() {
         {isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
       </button>
     )
+  }
+
+  function chooseGame(game: GameKey) {
+    setSelectedGame(game)
+    setFullScreenGame(null)
+    window.setTimeout(() => {
+      playPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
   }
 
   function answerRound(game: ChoiceGameKey, choice: string) {
@@ -515,7 +524,7 @@ function App() {
           <button
             key={game.key}
             className={selectedGame === game.key ? 'game-tab active' : 'game-tab'}
-            onClick={() => setSelectedGame(game.key)}
+            onClick={() => chooseGame(game.key)}
             type="button"
           >
             <strong>{game.title}</strong>
@@ -526,7 +535,7 @@ function App() {
 
       <p className="status" role="status">{message}</p>
 
-      <section className="play-panel">
+      <section className="play-panel" ref={playPanelRef}>
         {selectedGame === 'snake' ? (
           <article className={gameCardClass('snake', 'snake-fullscreen-ready')}>
             <div className="snake-topbar game-card-topbar">
