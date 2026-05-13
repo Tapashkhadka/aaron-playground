@@ -16,7 +16,7 @@ type GameKey =
   | 'puzzles'
   | 'snake'
 
-type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake'>
+type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles'>
 
 type ChoiceRound = {
   prompt: string
@@ -218,26 +218,6 @@ const riddleRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
   return { prompt, answers, correct, helper: `Riddle ${index + 1} of 120` }
 })
 
-const puzzleBank: [string, string, string[]][] = [
-  ['I am thinking of a number. It is more than 4 and less than 6.', '5', ['5', '3', '7']],
-  ['Which one does not belong: apple, banana, carrot?', 'Carrot', ['Carrot', 'Apple', 'Banana']],
-  ['Finish the clue: morning, afternoon, evening, ...', 'Night', ['Night', 'Lunch', 'Blue']],
-  ['If you have 2 socks and get 2 more, how many socks?', '4', ['4', '2', '6']],
-  ['Which is used to write?', 'Pencil', ['Pencil', 'Spoon', 'Pillow']],
-  ['Which one can fly: fish, bird, cat?', 'Bird', ['Bird', 'Fish', 'Cat']],
-  ['What comes after A, B, C?', 'D', ['D', 'F', 'Z']],
-  ['Which is the smallest: mouse, elephant, car?', 'Mouse', ['Mouse', 'Elephant', 'Car']],
-  ['Find the pair: shoe and ...', 'Sock', ['Sock', 'Cloud', 'Tree']],
-  ['Which is hotter?', 'Fire', ['Fire', 'Ice', 'Snow']],
-  ['Which belongs in the ocean?', 'Whale', ['Whale', 'Camel', 'Lion']],
-  ['What do you use to unlock a door?', 'Key', ['Key', 'Banana', 'Hat']],
-]
-
-const puzzleRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
-  const [prompt, correct, answers] = puzzleBank[index % puzzleBank.length]
-  return { prompt, answers, correct, helper: `Puzzle ${index + 1} of 120` }
-})
-
 function getRounds(key: ChoiceGameKey): ChoiceRound[] {
   const rounds: Record<ChoiceGameKey, ChoiceRound[]> = {
     math: mathQuestions,
@@ -250,7 +230,6 @@ function getRounds(key: ChoiceGameKey): ChoiceRound[] {
     animals: animalRounds,
     bigger: biggerRounds,
     riddles: riddleRounds,
-    puzzles: puzzleRounds,
   }
   return rounds[key as ChoiceGameKey]
 }
@@ -286,7 +265,6 @@ function App() {
     animals: 0,
     bigger: 0,
     riddles: 0,
-    puzzles: 0,
   }))
   const [answerOrders, setAnswerOrders] = useState<Record<ChoiceGameKey, string[]>>(() => ({
     math: shuffleAnswers(mathQuestions[mathStartIndex].answers),
@@ -299,7 +277,6 @@ function App() {
     animals: shuffleAnswers(animalRounds[0].answers),
     bigger: shuffleAnswers(biggerRounds[0].answers),
     riddles: shuffleAnswers(riddleRounds[0].answers),
-    puzzles: shuffleAnswers(puzzleRounds[0].answers),
   }))
   const [memoryBoardIndex, setMemoryBoardIndex] = useState(0)
   const [message, setMessage] = useState('Pick a game and start playing!')
@@ -311,6 +288,9 @@ function App() {
   const [snakeDirection, setSnakeDirection] = useState(1)
   const [snakeGem, setSnakeGem] = useState(57)
   const [snakeScore, setSnakeScore] = useState(0)
+  const [snakeFullScreen, setSnakeFullScreen] = useState(false)
+  const [puzzleTiles, setPuzzleTiles] = useState([1, 2, 3, 4, 5, 6, 7, 8, 0])
+  const [puzzleMoves, setPuzzleMoves] = useState(0)
 
   const currentBoard = memoryBoards[memoryBoardIndex]
   const currentInfo = gameInfo.find((game) => game.key === selectedGame) ?? gameInfo[0]
@@ -359,13 +339,14 @@ function App() {
 
   function moveSnake(direction: number) {
     setSnakeDirection(direction)
+    const nextGem = randomIndex(225)
     setSnakeCells((currentSnake) => {
       const head = currentSnake[0]
       const nextHead = head + direction
       const hitWall = nextHead < 0 || nextHead >= 225 || (head % 15 === 0 && direction === -1) || (head % 15 === 14 && direction === 1)
       if (hitWall || currentSnake.includes(nextHead)) {
         setSnakeScore(0)
-        setSnakeGem(randomIndex(225))
+        setSnakeGem(nextGem)
         setMessage('Rainbow Snake restarted — try another path! 🐍')
         return [112, 111, 110]
       }
@@ -373,13 +354,75 @@ function App() {
       const nextSnake = [nextHead, ...currentSnake]
       if (nextHead === snakeGem) {
         setSnakeScore((score) => score + 1)
-        setSnakeGem(randomIndex(225))
+        setSnakeGem(nextGem)
         setMessage('Yum! You collected a gem! 💎')
         return nextSnake
       }
 
       return nextSnake.slice(0, currentSnake.length)
     })
+  }
+
+  function movePuzzleTile(tileIndex: number) {
+    const blankIndex = puzzleTiles.indexOf(0)
+    const canMove = [blankIndex - 3, blankIndex + 3].includes(tileIndex) ||
+      (Math.floor(blankIndex / 3) === Math.floor(tileIndex / 3) && [blankIndex - 1, blankIndex + 1].includes(tileIndex))
+
+    if (!canMove) return
+
+    const nextTiles = [...puzzleTiles]
+    nextTiles[blankIndex] = nextTiles[tileIndex]
+    nextTiles[tileIndex] = 0
+    setPuzzleTiles(nextTiles)
+    setPuzzleMoves((moves) => moves + 1)
+    setMessage(nextTiles.join(',') === '1,2,3,4,5,6,7,8,0' ? 'Puzzle solved! Beautiful work! 🧩' : 'Nice move — keep solving!')
+  }
+
+  function shufflePuzzle() {
+    let nextTiles = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+    for (let move = 0; move < 80; move += 1) {
+      const blankIndex = nextTiles.indexOf(0)
+      const possibleMoves = [blankIndex - 3, blankIndex + 3, blankIndex - 1, blankIndex + 1].filter((tileIndex) =>
+        tileIndex >= 0 &&
+        tileIndex < 9 &&
+        (Math.abs(tileIndex - blankIndex) === 3 || Math.floor(tileIndex / 3) === Math.floor(blankIndex / 3)),
+      )
+      const tileIndex = possibleMoves[randomIndex(possibleMoves.length)]
+      const copy = [...nextTiles]
+      copy[blankIndex] = copy[tileIndex]
+      copy[tileIndex] = 0
+      nextTiles = copy
+    }
+    setPuzzleTiles(nextTiles)
+    setPuzzleMoves(0)
+    setMessage('Puzzle shuffled — slide the numbers back in order!')
+  }
+
+  function renderPuzzleGame() {
+    return (
+      <article className="challenge-card puzzles">
+        <p className="round-count">Moves: {puzzleMoves}</p>
+        <h2>Puzzle Portal</h2>
+        <p className="snake-help">Slide tiles into the empty space until the board reads 1 to 8.</p>
+        <div className="tile-puzzle" aria-label="Sliding tile puzzle">
+          {puzzleTiles.map((tile, index) => (
+            <button
+              key={`${tile}-${index}`}
+              type="button"
+              className={tile === 0 ? 'tile empty' : 'tile'}
+              onClick={() => movePuzzleTile(index)}
+              aria-label={tile === 0 ? 'Empty puzzle space' : `Move tile ${tile}`}
+            >
+              {tile !== 0 ? tile : ''}
+            </button>
+          ))}
+        </div>
+        <div className="puzzle-actions">
+          <button type="button" onClick={shufflePuzzle}>Shuffle Puzzle</button>
+          <button type="button" onClick={() => { setPuzzleTiles([1, 2, 3, 4, 5, 6, 7, 8, 0]); setPuzzleMoves(0); setMessage('Puzzle reset!') }}>Reset</button>
+        </div>
+      </article>
+    )
   }
 
   function renderChoiceGame(game: ChoiceGameKey) {
@@ -462,25 +505,36 @@ function App() {
 
       <section className="play-panel">
         {selectedGame === 'snake' ? (
-          <article className="challenge-card snake">
-            <p className="round-count">Score: {snakeScore}</p>
-            <h2>Rainbow Snake</h2>
-            <p className="snake-help">Use the big buttons to slither around, collect gems, and avoid walls.</p>
-            <div className="snake-board" aria-label="Rainbow Snake game board">
-              {Array.from({ length: 225 }, (_, index) => {
-                const isHead = snakeCells[0] === index
-                const isBody = snakeCells.includes(index)
-                const isGem = snakeGem === index
-                return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? '💎' : ''}</span>
-              })}
+          <article className={snakeFullScreen ? 'challenge-card snake snake-fullscreen' : 'challenge-card snake'}>
+            <div className="snake-topbar">
+              <div>
+                <p className="round-count">Score: {snakeScore}</p>
+                <h2>Rainbow Snake</h2>
+              </div>
+              <button type="button" className="fullscreen-toggle" onClick={() => setSnakeFullScreen(!snakeFullScreen)}>
+                {snakeFullScreen ? 'Exit Full Screen' : 'Full Screen'}
+              </button>
             </div>
-            <div className="snake-controls">
-              <button type="button" onClick={() => moveSnake(-15)} disabled={snakeDirection === 15}>↑</button>
-              <button type="button" onClick={() => moveSnake(-1)} disabled={snakeDirection === 1}>←</button>
-              <button type="button" onClick={() => moveSnake(1)} disabled={snakeDirection === -1}>→</button>
-              <button type="button" onClick={() => moveSnake(15)} disabled={snakeDirection === -15}>↓</button>
+            <p className="snake-help">Swipe-style controls: collect gems, grow longer, avoid walls. Designed to feel like a mobile app.</p>
+            <div className="snake-game-shell">
+              <div className="snake-board" aria-label="Rainbow Snake game board">
+                {Array.from({ length: 225 }, (_, index) => {
+                  const isHead = snakeCells[0] === index
+                  const isBody = snakeCells.includes(index)
+                  const isGem = snakeGem === index
+                  return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? '💎' : ''}</span>
+                })}
+              </div>
+              <div className="snake-controls">
+                <button type="button" onClick={() => moveSnake(-15)} disabled={snakeDirection === 15}>↑</button>
+                <button type="button" onClick={() => moveSnake(-1)} disabled={snakeDirection === 1}>←</button>
+                <button type="button" onClick={() => moveSnake(1)} disabled={snakeDirection === -1}>→</button>
+                <button type="button" onClick={() => moveSnake(15)} disabled={snakeDirection === -15}>↓</button>
+              </div>
             </div>
           </article>
+        ) : selectedGame === 'puzzles' ? (
+          renderPuzzleGame()
         ) : selectedGame === 'memory' ? (
           <article className="challenge-card memory">
             <p className="round-count">Memory board {memoryBoardIndex + 1} of {memoryBoards.length}</p>
