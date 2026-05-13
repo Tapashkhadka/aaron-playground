@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import './App.css'
 
 type GameKey = 'math' | 'science' | 'memory' | 'patterns'
@@ -15,7 +15,7 @@ const scienceQuestions = [
   { prompt: 'Water can be solid, liquid, and...', answers: ['Gas', 'Rock', 'Metal'], correct: 'Gas' },
 ]
 
-const memoryCards = ['🌟', '🚀', '🧠', '🦕', '🌈', '🔬']
+const shuffledCards = ['🌟', '🚀', '🧠', '🦕', '🌈', '🔬', '🧠', '🌈', '🚀', '🔬', '🦕', '🌟']
 const patternRounds = [
   { pattern: ['🔴', '🔵', '🔴', '🔵'], answer: '🔴', choices: ['🔴', '🟢', '🟡'] },
   { pattern: ['⭐', '⭐', '🌙', '⭐', '⭐', '🌙'], answer: '⭐', choices: ['☀️', '⭐', '☁️'] },
@@ -30,8 +30,6 @@ function App() {
   const [matched, setMatched] = useState<string[]>([])
   const [flipped, setFlipped] = useState<number[]>([])
   const [patternIndex, setPatternIndex] = useState(0)
-
-  const shuffledCards = useMemo(() => [...memoryCards, ...memoryCards].sort(() => Math.random() - 0.5), [])
 
   function checkQuiz(answer: string, type: 'math' | 'science') {
     const questions = type === 'math' ? mathQuestions : scienceQuestions
