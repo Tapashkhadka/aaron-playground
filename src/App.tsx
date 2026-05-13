@@ -288,12 +288,25 @@ function App() {
   const [snakeDirection, setSnakeDirection] = useState(1)
   const [snakeGem, setSnakeGem] = useState(57)
   const [snakeScore, setSnakeScore] = useState(0)
-  const [snakeFullScreen, setSnakeFullScreen] = useState(false)
+  const [fullScreenGame, setFullScreenGame] = useState<GameKey | null>(null)
   const [puzzleTiles, setPuzzleTiles] = useState([1, 2, 3, 4, 5, 6, 7, 8, 0])
   const [puzzleMoves, setPuzzleMoves] = useState(0)
 
   const currentBoard = memoryBoards[memoryBoardIndex]
   const currentInfo = gameInfo.find((game) => game.key === selectedGame) ?? gameInfo[0]
+
+  function gameCardClass(game: GameKey, extraClass = '') {
+    return `challenge-card ${game} ${extraClass} ${fullScreenGame === game ? 'game-fullscreen' : ''}`.trim()
+  }
+
+  function renderFullScreenButton(game: GameKey) {
+    const isFullScreen = fullScreenGame === game
+    return (
+      <button type="button" className="fullscreen-toggle" onClick={() => setFullScreenGame(isFullScreen ? null : game)}>
+        {isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
+      </button>
+    )
+  }
 
   function answerRound(game: ChoiceGameKey, choice: string) {
     const rounds = getRounds(game)
@@ -400,9 +413,14 @@ function App() {
 
   function renderPuzzleGame() {
     return (
-      <article className="challenge-card puzzles">
-        <p className="round-count">Moves: {puzzleMoves}</p>
-        <h2>Puzzle Portal</h2>
+      <article className={gameCardClass('puzzles')}>
+        <div className="game-card-topbar">
+          <div>
+            <p className="round-count">Moves: {puzzleMoves}</p>
+            <h2>Puzzle Portal</h2>
+          </div>
+          {renderFullScreenButton('puzzles')}
+        </div>
         <p className="snake-help">Slide tiles into the empty space until the board reads 1 to 8.</p>
         <div className="tile-puzzle" aria-label="Sliding tile puzzle">
           {puzzleTiles.map((tile, index) => (
@@ -429,9 +447,14 @@ function App() {
     const rounds = getRounds(game)
     const round = rounds[roundIndexes[game]]
     return (
-      <article className={`challenge-card ${game}`}>
-        <p className="round-count">{round.helper ?? `${currentInfo.title} round ${roundIndexes[game] + 1} of ${rounds.length}`}</p>
-        <h2>{currentInfo.title}</h2>
+      <article className={gameCardClass(game)}>
+        <div className="game-card-topbar">
+          <div>
+            <p className="round-count">{round.helper ?? `${currentInfo.title} round ${roundIndexes[game] + 1} of ${rounds.length}`}</p>
+            <h2>{currentInfo.title}</h2>
+          </div>
+          {renderFullScreenButton(game)}
+        </div>
         <p className={game === 'counting' ? 'question counting-question' : 'question'}>{round.prompt}</p>
         <div className="answer-grid">
           {(answerOrders[game] ?? round.answers).map((answer) => (
@@ -505,15 +528,13 @@ function App() {
 
       <section className="play-panel">
         {selectedGame === 'snake' ? (
-          <article className={snakeFullScreen ? 'challenge-card snake snake-fullscreen' : 'challenge-card snake'}>
-            <div className="snake-topbar">
+          <article className={gameCardClass('snake', 'snake-fullscreen-ready')}>
+            <div className="snake-topbar game-card-topbar">
               <div>
                 <p className="round-count">Score: {snakeScore}</p>
                 <h2>Rainbow Snake</h2>
               </div>
-              <button type="button" className="fullscreen-toggle" onClick={() => setSnakeFullScreen(!snakeFullScreen)}>
-                {snakeFullScreen ? 'Exit Full Screen' : 'Full Screen'}
-              </button>
+              {renderFullScreenButton('snake')}
             </div>
             <p className="snake-help">Swipe-style controls: collect gems, grow longer, avoid walls. Designed to feel like a mobile app.</p>
             <div className="snake-game-shell">
@@ -536,9 +557,14 @@ function App() {
         ) : selectedGame === 'puzzles' ? (
           renderPuzzleGame()
         ) : selectedGame === 'memory' ? (
-          <article className="challenge-card memory">
-            <p className="round-count">Memory board {memoryBoardIndex + 1} of {memoryBoards.length}</p>
-            <h2>Memory Match</h2>
+          <article className={gameCardClass('memory')}>
+            <div className="game-card-topbar">
+              <div>
+                <p className="round-count">Memory board {memoryBoardIndex + 1} of {memoryBoards.length}</p>
+                <h2>Memory Match</h2>
+              </div>
+              {renderFullScreenButton('memory')}
+            </div>
             <div className="memory-grid">
               {currentBoard.map((card, index) => {
                 const isVisible = flipped.includes(index) || matched.includes(`${index}`)
