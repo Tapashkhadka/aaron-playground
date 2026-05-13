@@ -161,15 +161,23 @@ h1 {
   border-color: #bae6fd;
 }
 
-.challenge-card.counting {
+.challenge-card.counting,
+.challenge-card.shapes,
+.challenge-card.animals,
+.challenge-card.bigger,
+.challenge-card.memory {
   border-color: #fed7aa;
 }
 
-.big-emoji,
-.counting-items {
-  margin: 0 0 16px;
-  font-size: clamp(3rem, 14vw, 5rem);
-  line-height: 1.1;
+.round-count {
+  display: inline-flex;
+  margin: 0 0 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.9rem;
+  font-weight: 900;
 }
 
 .question {
@@ -177,6 +185,11 @@ h1 {
   color: #0f172a;
   font-size: clamp(1.45rem, 7vw, 2.5rem);
   font-weight: 900;
+  white-space: pre-line;
+}
+
+.counting-question {
+  line-height: 1.45;
 }
 
 .answer-grid {
