@@ -220,6 +220,8 @@ function App() {
   })
   const [memoryBoardIndex, setMemoryBoardIndex] = useState(0)
   const [message, setMessage] = useState('Pick a game and start playing!')
+  const [hasParentAgreement, setHasParentAgreement] = useState(false)
+  const [agreementMessage, setAgreementMessage] = useState('')
   const [matched, setMatched] = useState<string[]>([])
   const [flipped, setFlipped] = useState<number[]>([])
 
@@ -278,7 +280,33 @@ function App() {
   }
 
   return (
-    <main>
+    <main className={hasParentAgreement ? '' : 'locked'}>
+      {!hasParentAgreement && (
+        <section className="supervision-gate" aria-labelledby="supervision-title" role="dialog" aria-modal="true">
+          <div className="supervision-card">
+            <img src="/aaron-playground/parent-supervision.jpg" alt="Aaron Playground welcome image" />
+            <div className="supervision-copy">
+              <p className="eyebrow">Before You Play</p>
+              <h2 id="supervision-title">Parent supervision required</h2>
+              <p>
+                Aaron Playground is made for kids. Please play with parent or guardian supervision.
+                You can only enter the games if you agree to play safely with supervision.
+              </p>
+              {agreementMessage && <p className="agreement-warning" role="alert">{agreementMessage}</p>}
+              <div className="agreement-actions">
+                <button type="button" onClick={() => setHasParentAgreement(true)}>I agree — let me play</button>
+                <button
+                  type="button"
+                  className="reject"
+                  onClick={() => setAgreementMessage('You need parent or guardian supervision to play Aaron Playground.')}
+                >
+                  I do not agree
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
       <section className="hero" aria-labelledby="page-title">
         <div className="hero-copy">
           <p className="eyebrow">Aaron Playground</p>
