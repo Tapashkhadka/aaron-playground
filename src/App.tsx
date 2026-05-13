@@ -15,8 +15,9 @@ type GameKey =
   | 'riddles'
   | 'puzzles'
   | 'snake'
+  | 'bubbles'
 
-type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles'>
+type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles' | 'bubbles'>
 
 type ChoiceRound = {
   prompt: string
@@ -37,6 +38,7 @@ type GameInfo = {
 const gameInfo: GameInfo[] = [
   { key: 'math', title: 'Math Quest', description: 'Tap number cards and solve fast.', icon: 'Math', art: 'math', level: 'Ages 5+' },
   { key: 'snake', title: 'Rainbow Snake', description: 'Arcade action: collect gems and grow.', icon: 'Snake', art: 'snake', level: 'All ages' },
+  { key: 'bubbles', title: 'Bubble Pop', description: 'Pop the exact number of bubbles.', icon: 'Bubble', art: 'bubbles', level: 'Ages 2+' },
   { key: 'puzzles', title: 'Puzzle Portal', description: 'Slide tiles into the right order.', icon: 'Puzzle', art: 'puzzle', level: 'Ages 6+' },
   { key: 'science', title: 'Science Lab', description: 'Tap lab cards and discover facts.', icon: 'Lab', art: 'science', level: 'Ages 6+' },
   { key: 'memory', title: 'Memory Match', description: 'Flip custom cards and find pairs.', icon: 'Memory', art: 'memory', level: 'Ages 3+' },
@@ -294,6 +296,9 @@ function App() {
   const [fullScreenGame, setFullScreenGame] = useState<GameKey | null>(null)
   const [puzzleTiles, setPuzzleTiles] = useState([1, 2, 3, 4, 5, 6, 7, 8, 0])
   const [puzzleMoves, setPuzzleMoves] = useState(0)
+  const [bubbleTarget, setBubbleTarget] = useState(5)
+  const [poppedBubbles, setPoppedBubbles] = useState<number[]>([])
+  const [starScore, setStarScore] = useState(0)
   const playPanelRef = useRef<HTMLElement | null>(null)
 
   const currentBoard = memoryBoards[memoryBoardIndex]
@@ -331,6 +336,7 @@ function App() {
       if (rounds.length > 1 && nextIndex === index) nextIndex = (nextIndex + 1) % rounds.length
     }
 
+    if (choice === current.correct) setStarScore((score) => score + 1)
     setMessage(choice === current.correct ? 'Awesome answer! 🌟' : `Good try! The answer was ${current.correct}.`)
     setRoundIndexes((currentIndexes) => ({ ...currentIndexes, [game]: nextIndex }))
     setAnswerOrders((currentOrders) => ({ ...currentOrders, [game]: shuffleAnswers(rounds[nextIndex].answers) }))
@@ -349,6 +355,7 @@ function App() {
         setMatched(nextMatched)
         setFlipped([])
         if (nextMatched.length === currentBoard.length) {
+          setStarScore((score) => score + 3)
           setMessage('Board cleared! New memory board unlocked! 🧩')
           setMemoryBoardIndex((memoryBoardIndex + 1) % memoryBoards.length)
           setMatched([])
@@ -380,6 +387,7 @@ function App() {
       if (nextHead === snakeGem) {
         setSnakeScore((score) => score + 1)
         setSnakeGem(nextGem)
+        setStarScore((score) => score + 1)
         setMessage('Yum! You collected a gem! 💎')
         return nextSnake
       }
@@ -400,6 +408,7 @@ function App() {
     nextTiles[tileIndex] = 0
     setPuzzleTiles(nextTiles)
     setPuzzleMoves((moves) => moves + 1)
+    if (nextTiles.join(',') === '1,2,3,4,5,6,7,8,0') setStarScore((score) => score + 5)
     setMessage(nextTiles.join(',') === '1,2,3,4,5,6,7,8,0' ? 'Puzzle solved! Beautiful work! 🧩' : 'Nice move — keep solving!')
   }
 
@@ -421,6 +430,60 @@ function App() {
     setPuzzleTiles(nextTiles)
     setPuzzleMoves(0)
     setMessage('Puzzle shuffled — slide the numbers back in order!')
+  }
+
+
+  function popBubble(index: number) {
+    if (poppedBubbles.includes(index)) return
+
+    const nextPopped = [...poppedBubbles, index]
+    setPoppedBubbles(nextPopped)
+
+    if (nextPopped.length === bubbleTarget) {
+      setStarScore((score) => score + 2)
+      setMessage(`Perfect! You popped exactly ${bubbleTarget} bubbles!`)
+      window.setTimeout(() => {
+        setPoppedBubbles([])
+        setBubbleTarget(randomIndex(8) + 1)
+      }, 650)
+    } else if (nextPopped.length > bubbleTarget) {
+      setMessage(`Oops — that was more than ${bubbleTarget}. Try again!`)
+      window.setTimeout(() => setPoppedBubbles([]), 650)
+    } else {
+      setMessage(`${bubbleTarget - nextPopped.length} more to pop!`)
+    }
+  }
+
+  function renderBubbleGame() {
+    return (
+      <article className={gameCardClass('bubbles')}>
+        <div className="game-card-topbar">
+          <div>
+            <p className="round-count">Stars: {starScore}</p>
+            <h2>Bubble Pop</h2>
+          </div>
+          {renderFullScreenButton('bubbles')}
+        </div>
+        {renderGameArt('bubbles')}
+        <p className="question bubble-instruction">Pop exactly <strong>{bubbleTarget}</strong> bubbles</p>
+        <div className="bubble-board" aria-label={`Pop exactly ${bubbleTarget} bubbles`}>
+          {Array.from({ length: 12 }, (_, index) => (
+            <button
+              key={index}
+              type="button"
+              className={poppedBubbles.includes(index) ? 'bubble popped' : 'bubble'}
+              onClick={() => popBubble(index)}
+              aria-label={`Bubble ${index + 1}`}
+            >
+              <span></span>
+            </button>
+          ))}
+        </div>
+        <div className="bubble-progress" aria-hidden="true">
+          <span style={{ width: `${Math.min(100, (poppedBubbles.length / bubbleTarget) * 100)}%` }}></span>
+        </div>
+      </article>
+    )
   }
 
   function renderPuzzleGame() {
@@ -558,7 +621,10 @@ function App() {
             <strong>Now playing: {currentInfo.title}</strong>
             <span>{currentInfo.description}</span>
           </div>
-          <button type="button" onClick={() => playPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Play now</button>
+          <div className="hub-actions">
+            <span className="star-pill">★ {starScore}</span>
+            <button type="button" onClick={() => playPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Play now</button>
+          </div>
         </div>
 
         <div className="game-picker" aria-label="Choose a game">
@@ -610,6 +676,8 @@ function App() {
               </div>
             </div>
           </article>
+        ) : selectedGame === 'bubbles' ? (
+          renderBubbleGame()
         ) : selectedGame === 'puzzles' ? (
           renderPuzzleGame()
         ) : selectedGame === 'memory' ? (
