@@ -30,23 +30,24 @@ type GameInfo = {
   title: string
   description: string
   icon: string
+  art: string
   level: string
 }
 
 const gameInfo: GameInfo[] = [
-  { key: 'math', title: 'Math Quest', description: 'Fast number puzzles with random answers.', icon: '🧮', level: 'Ages 5+' },
-  { key: 'snake', title: 'Rainbow Snake', description: 'Arcade action: collect gems and grow.', icon: '🐍', level: 'All ages' },
-  { key: 'puzzles', title: 'Puzzle Portal', description: 'Slide tiles into the right order.', icon: '🧩', level: 'Ages 6+' },
-  { key: 'science', title: 'Science Lab', description: 'Curious facts about nature and space.', icon: '🔬', level: 'Ages 6+' },
-  { key: 'memory', title: 'Memory Match', description: 'Flip cards and find matching pairs.', icon: '🧠', level: 'Ages 3+' },
-  { key: 'patterns', title: 'Pattern Pop', description: 'Spot what comes next.', icon: '✨', level: 'Ages 4+' },
-  { key: 'spelling', title: 'Word Builder', description: 'Match pictures to easy words.', icon: '📚', level: 'Ages 4+' },
-  { key: 'colors', title: 'Color Quest', description: 'Tap the color that matches.', icon: '🎨', level: 'Ages 2+' },
-  { key: 'counting', title: 'Counting Stars', description: 'Count friendly objects on screen.', icon: '⭐', level: 'Ages 2+' },
-  { key: 'shapes', title: 'Shape Safari', description: 'Learn circles, squares, stars, and more.', icon: '🔺', level: 'Ages 2+' },
-  { key: 'animals', title: 'Animal Sounds', description: 'Match animals with their sounds.', icon: '🦁', level: 'Ages 2+' },
-  { key: 'bigger', title: 'Bigger or Smaller', description: 'Compare numbers and objects.', icon: '📏', level: 'Ages 4+' },
-  { key: 'riddles', title: 'Riddle Rocket', description: 'Brain teasers for older kids and adults.', icon: '🚀', level: 'Ages 8+' },
+  { key: 'math', title: 'Math Quest', description: 'Tap number cards and solve fast.', icon: 'Math', art: 'math', level: 'Ages 5+' },
+  { key: 'snake', title: 'Rainbow Snake', description: 'Arcade action: collect gems and grow.', icon: 'Snake', art: 'snake', level: 'All ages' },
+  { key: 'puzzles', title: 'Puzzle Portal', description: 'Slide tiles into the right order.', icon: 'Puzzle', art: 'puzzle', level: 'Ages 6+' },
+  { key: 'science', title: 'Science Lab', description: 'Tap lab cards and discover facts.', icon: 'Lab', art: 'science', level: 'Ages 6+' },
+  { key: 'memory', title: 'Memory Match', description: 'Flip custom cards and find pairs.', icon: 'Memory', art: 'memory', level: 'Ages 3+' },
+  { key: 'patterns', title: 'Pattern Pop', description: 'Complete visual pattern trails.', icon: 'Pattern', art: 'pattern', level: 'Ages 4+' },
+  { key: 'spelling', title: 'Word Builder', description: 'Build words from picture cards.', icon: 'Words', art: 'spelling', level: 'Ages 4+' },
+  { key: 'colors', title: 'Color Quest', description: 'Tap bright paint tiles.', icon: 'Color', art: 'colors', level: 'Ages 2+' },
+  { key: 'counting', title: 'Counting Garden', description: 'Count custom bubbles and blocks.', icon: 'Count', art: 'counting', level: 'Ages 2+' },
+  { key: 'shapes', title: 'Shape Safari', description: 'Tap drawn shapes on screen.', icon: 'Shapes', art: 'shapes', level: 'Ages 2+' },
+  { key: 'animals', title: 'Animal Sounds', description: 'Match sound cards with animal art.', icon: 'Animal', art: 'animals', level: 'Ages 2+' },
+  { key: 'bigger', title: 'Bigger or Smaller', description: 'Compare visual stacks.', icon: 'Compare', art: 'bigger', level: 'Ages 4+' },
+  { key: 'riddles', title: 'Riddle Rocket', description: 'Brain teasers for older kids and adults.', icon: 'Riddle', art: 'riddles', level: 'Ages 8+' },
 ]
 
 function numberChoices(correct: number): string[] {
@@ -454,6 +455,23 @@ function App() {
     )
   }
 
+
+  function renderGameArt(game: GameKey) {
+    return <div className={`custom-game-art art-${game}`} aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  }
+
+  function renderChoiceVisual(game: ChoiceGameKey, answer: string) {
+    if (game === 'colors') return <span className={`choice-swatch swatch-${answer.toLowerCase()}`}></span>
+    if (game === 'shapes') return <span className={`choice-shape shape-${answer.toLowerCase()}`}></span>
+    if (game === 'counting') return <span className="choice-number-tower">{Array.from({ length: Math.min(Number(answer) || 1, 8) }, (_, index) => <i key={index}></i>)}</span>
+    if (game === 'bigger') return <span className="choice-stack">{Array.from({ length: answer === 'Same' ? 2 : Math.min(Number(answer) || 1, 8) }, (_, index) => <i key={index}></i>)}</span>
+    if (game === 'animals') return <span className="choice-paw"><i></i><i></i><i></i><i></i></span>
+    if (game === 'science') return <span className="choice-flask"><i></i></span>
+    if (game === 'spelling') return <span className="choice-letter-card">Aa</span>
+    if (game === 'math') return <span className="choice-number-card">#</span>
+    return null
+  }
+
   function renderChoiceGame(game: ChoiceGameKey) {
     const rounds = getRounds(game)
     const round = rounds[roundIndexes[game]]
@@ -466,10 +484,14 @@ function App() {
           </div>
           {renderFullScreenButton(game)}
         </div>
+        {renderGameArt(game)}
         <p className={game === 'counting' ? 'question counting-question' : 'question'}>{round.prompt}</p>
-        <div className="answer-grid">
+        <div className={`answer-grid visual-grid ${game}-grid`}>
           {(answerOrders[game] ?? round.answers).map((answer) => (
-            <button key={answer} onClick={() => answerRound(game, answer)} type="button">{answer}</button>
+            <button key={answer} className="visual-answer" onClick={() => answerRound(game, answer)} type="button">
+              {renderChoiceVisual(game, answer)}
+              <span>{answer}</span>
+            </button>
           ))}
         </div>
       </article>
@@ -531,7 +553,7 @@ function App() {
         </div>
 
         <div className="selected-game-strip" aria-live="polite">
-          <span className="selected-icon">{currentInfo.icon}</span>
+          <span className={`selected-icon icon-${currentInfo.art}`}>{currentInfo.icon}</span>
           <div>
             <strong>Now playing: {currentInfo.title}</strong>
             <span>{currentInfo.description}</span>
@@ -547,7 +569,7 @@ function App() {
               onClick={() => chooseGame(game.key)}
               type="button"
             >
-              <span className="game-icon" aria-hidden="true">{game.icon}</span>
+              <span className={`game-icon icon-${game.art}`} aria-hidden="true">{game.icon}</span>
               <span className="game-card-copy">
                 <strong>{game.title}</strong>
                 <span>{game.description}</span>
