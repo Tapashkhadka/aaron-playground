@@ -1380,3 +1380,157 @@ h1 {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* Phone-first full-screen fit pass: app-like viewport behavior */
+.game-fullscreen {
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  touch-action: manipulation;
+}
+
+.game-fullscreen .game-card-topbar {
+  flex-shrink: 0;
+}
+
+.game-fullscreen .custom-game-art {
+  flex-shrink: 0;
+  max-height: 24dvh;
+  overflow: hidden;
+}
+
+.game-fullscreen .question {
+  flex-shrink: 0;
+  margin-bottom: clamp(12px, 2dvh, 22px);
+}
+
+.game-fullscreen .answer-grid,
+.game-fullscreen .memory-grid,
+.game-fullscreen .tile-puzzle,
+.game-fullscreen .bubble-board {
+  max-width: min(100%, 900px);
+}
+
+.snake.game-fullscreen {
+  padding-top: max(12px, env(safe-area-inset-top));
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.snake.game-fullscreen .snake-board {
+  width: min(94vw, 70dvh, 620px);
+  max-width: 94vw;
+  max-height: 58dvh;
+}
+
+.snake.game-fullscreen .snake-controls {
+  flex-shrink: 0;
+  width: min(88vw, 380px);
+}
+
+.bubbles.game-fullscreen .bubble-board {
+  width: min(94vw, 700px);
+  max-height: 54dvh;
+}
+
+.puzzles.game-fullscreen .tile-puzzle {
+  width: min(88vw, 460px);
+}
+
+@media (max-width: 480px) {
+  .game-fullscreen {
+    align-content: start;
+    padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  }
+
+  .game-fullscreen .game-card-topbar {
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .game-fullscreen .fullscreen-toggle {
+    min-height: 40px;
+    padding: 9px 11px;
+    font-size: 0.82rem;
+  }
+
+  .game-fullscreen .round-count {
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+  }
+
+  .game-fullscreen h2 {
+    margin-bottom: 6px;
+    font-size: clamp(1.45rem, 7vw, 2rem);
+  }
+
+  .game-fullscreen .custom-game-art {
+    display: none;
+  }
+
+  .game-fullscreen .question {
+    font-size: clamp(1.35rem, 8vw, 2.35rem);
+    line-height: 1.08;
+  }
+
+  .game-fullscreen .answer-grid {
+    gap: 9px;
+  }
+
+  .game-fullscreen .answer-grid button,
+  .game-fullscreen .memory-card {
+    min-height: clamp(64px, 11dvh, 96px);
+  }
+
+  .snake.game-fullscreen .snake-help {
+    display: none;
+  }
+
+  .snake.game-fullscreen .snake-board {
+    width: min(94vw, 56dvh);
+    max-height: 54dvh;
+    padding: 6px;
+    gap: 2px;
+  }
+
+  .snake.game-fullscreen .snake-controls {
+    width: min(86vw, 310px);
+    gap: 8px;
+  }
+
+  .snake.game-fullscreen .snake-controls button {
+    min-height: clamp(50px, 8dvh, 68px);
+    border-radius: 18px;
+  }
+
+  .bubbles.game-fullscreen .bubble-board {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+    padding: 10px;
+    max-height: 52dvh;
+  }
+
+  .puzzles.game-fullscreen .tile-puzzle {
+    width: min(90vw, 360px);
+    gap: 8px;
+    padding: 10px;
+  }
+}
+
+@media (max-height: 680px) {
+  .game-fullscreen .custom-game-art,
+  .snake.game-fullscreen .snake-help {
+    display: none;
+  }
+
+  .snake.game-fullscreen .snake-board {
+    width: min(92vw, 52dvh);
+  }
+
+  .game-fullscreen .question {
+    margin-bottom: 10px;
+  }
+}
