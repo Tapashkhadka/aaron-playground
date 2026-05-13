@@ -12,6 +12,11 @@ type GameKey =
   | 'shapes'
   | 'animals'
   | 'bigger'
+  | 'riddles'
+  | 'puzzles'
+  | 'snake'
+
+type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake'>
 
 type ChoiceRound = {
   prompt: string
@@ -37,6 +42,9 @@ const gameInfo: GameInfo[] = [
   { key: 'shapes', title: 'Shape Safari', description: 'Easy shape practice.' },
   { key: 'animals', title: 'Animal Sounds', description: 'Match animals and sounds.' },
   { key: 'bigger', title: 'Bigger or Smaller', description: 'Compare friendly objects.' },
+  { key: 'riddles', title: 'Riddle Rocket', description: 'Brain teasers for all ages.' },
+  { key: 'puzzles', title: 'Puzzle Portal', description: 'Logic and clue puzzles.' },
+  { key: 'snake', title: 'Rainbow Snake', description: 'Slither, collect gems, grow.' },
 ]
 
 function numberChoices(correct: number): string[] {
@@ -190,8 +198,48 @@ const memoryBoards = Array.from({ length: 120 }, (_, index) => {
   return [...symbols, ...symbols].map((_, cardIndex, cards) => cards[(cardIndex * 5 + index) % cards.length])
 })
 
-function getRounds(key: GameKey): ChoiceRound[] {
-  const rounds: Record<Exclude<GameKey, 'memory'>, ChoiceRound[]> = {
+const riddleBank: [string, string, string[]][] = [
+  ['What has hands but cannot clap?', 'Clock', ['Clock', 'Dog', 'Cloud']],
+  ['What gets wetter as it dries?', 'Towel', ['Towel', 'Pencil', 'Moon']],
+  ['What has a face and two hands but no arms?', 'Clock', ['Clock', 'Chair', 'Tree']],
+  ['What has keys but no locks?', 'Piano', ['Piano', 'Shoe', 'Bottle']],
+  ['What can you catch but not throw?', 'Cold', ['Cold', 'Star', 'Book']],
+  ['What has words but never speaks?', 'Book', ['Book', 'Ball', 'Lamp']],
+  ['What goes up but never comes down?', 'Age', ['Age', 'Rain', 'Kite']],
+  ['What has many teeth but cannot bite?', 'Comb', ['Comb', 'Fish', 'Robot']],
+  ['What room has no doors?', 'Mushroom', ['Mushroom', 'Bedroom', 'Classroom']],
+  ['What has one eye but cannot see?', 'Needle', ['Needle', 'Tiger', 'Phone']],
+  ['What has legs but does not walk?', 'Table', ['Table', 'Rabbit', 'Duck']],
+  ['What is full of holes but holds water?', 'Sponge', ['Sponge', 'Cup', 'Leaf']],
+]
+
+const riddleRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
+  const [prompt, correct, answers] = riddleBank[index % riddleBank.length]
+  return { prompt, answers, correct, helper: `Riddle ${index + 1} of 120` }
+})
+
+const puzzleBank: [string, string, string[]][] = [
+  ['I am thinking of a number. It is more than 4 and less than 6.', '5', ['5', '3', '7']],
+  ['Which one does not belong: apple, banana, carrot?', 'Carrot', ['Carrot', 'Apple', 'Banana']],
+  ['Finish the clue: morning, afternoon, evening, ...', 'Night', ['Night', 'Lunch', 'Blue']],
+  ['If you have 2 socks and get 2 more, how many socks?', '4', ['4', '2', '6']],
+  ['Which is used to write?', 'Pencil', ['Pencil', 'Spoon', 'Pillow']],
+  ['Which one can fly: fish, bird, cat?', 'Bird', ['Bird', 'Fish', 'Cat']],
+  ['What comes after A, B, C?', 'D', ['D', 'F', 'Z']],
+  ['Which is the smallest: mouse, elephant, car?', 'Mouse', ['Mouse', 'Elephant', 'Car']],
+  ['Find the pair: shoe and ...', 'Sock', ['Sock', 'Cloud', 'Tree']],
+  ['Which is hotter?', 'Fire', ['Fire', 'Ice', 'Snow']],
+  ['Which belongs in the ocean?', 'Whale', ['Whale', 'Camel', 'Lion']],
+  ['What do you use to unlock a door?', 'Key', ['Key', 'Banana', 'Hat']],
+]
+
+const puzzleRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
+  const [prompt, correct, answers] = puzzleBank[index % puzzleBank.length]
+  return { prompt, answers, correct, helper: `Puzzle ${index + 1} of 120` }
+})
+
+function getRounds(key: ChoiceGameKey): ChoiceRound[] {
+  const rounds: Record<ChoiceGameKey, ChoiceRound[]> = {
     math: mathQuestions,
     science: scienceQuestions,
     patterns: patternRounds,
@@ -201,8 +249,10 @@ function getRounds(key: GameKey): ChoiceRound[] {
     shapes: shapeRounds,
     animals: animalRounds,
     bigger: biggerRounds,
+    riddles: riddleRounds,
+    puzzles: puzzleRounds,
   }
-  return rounds[key as Exclude<GameKey, 'memory'>]
+  return rounds[key as ChoiceGameKey]
 }
 
 function randomIndex(max: number): number {
@@ -225,7 +275,7 @@ function shuffleAnswers(answers: string[]): string[] {
 function App() {
   const [selectedGame, setSelectedGame] = useState<GameKey>('math')
   const [mathStartIndex] = useState(() => randomIndex(mathQuestions.length))
-  const [roundIndexes, setRoundIndexes] = useState<Record<Exclude<GameKey, 'memory'>, number>>(() => ({
+  const [roundIndexes, setRoundIndexes] = useState<Record<ChoiceGameKey, number>>(() => ({
     math: mathStartIndex,
     science: 0,
     patterns: 0,
@@ -235,8 +285,10 @@ function App() {
     shapes: 0,
     animals: 0,
     bigger: 0,
+    riddles: 0,
+    puzzles: 0,
   }))
-  const [answerOrders, setAnswerOrders] = useState<Record<Exclude<GameKey, 'memory'>, string[]>>(() => ({
+  const [answerOrders, setAnswerOrders] = useState<Record<ChoiceGameKey, string[]>>(() => ({
     math: shuffleAnswers(mathQuestions[mathStartIndex].answers),
     science: shuffleAnswers(scienceQuestions[0].answers),
     patterns: shuffleAnswers(patternRounds[0].answers),
@@ -246,6 +298,8 @@ function App() {
     shapes: shuffleAnswers(shapeRounds[0].answers),
     animals: shuffleAnswers(animalRounds[0].answers),
     bigger: shuffleAnswers(biggerRounds[0].answers),
+    riddles: shuffleAnswers(riddleRounds[0].answers),
+    puzzles: shuffleAnswers(puzzleRounds[0].answers),
   }))
   const [memoryBoardIndex, setMemoryBoardIndex] = useState(0)
   const [message, setMessage] = useState('Pick a game and start playing!')
@@ -253,11 +307,15 @@ function App() {
   const [agreementMessage, setAgreementMessage] = useState('')
   const [matched, setMatched] = useState<string[]>([])
   const [flipped, setFlipped] = useState<number[]>([])
+  const [snakeCells, setSnakeCells] = useState([112, 111, 110])
+  const [snakeDirection, setSnakeDirection] = useState(1)
+  const [snakeGem, setSnakeGem] = useState(57)
+  const [snakeScore, setSnakeScore] = useState(0)
 
   const currentBoard = memoryBoards[memoryBoardIndex]
   const currentInfo = gameInfo.find((game) => game.key === selectedGame) ?? gameInfo[0]
 
-  function answerRound(game: Exclude<GameKey, 'memory'>, choice: string) {
+  function answerRound(game: ChoiceGameKey, choice: string) {
     const rounds = getRounds(game)
     const index = roundIndexes[game]
     const current = rounds[index]
@@ -299,7 +357,32 @@ function App() {
     }
   }
 
-  function renderChoiceGame(game: Exclude<GameKey, 'memory'>) {
+  function moveSnake(direction: number) {
+    setSnakeDirection(direction)
+    setSnakeCells((currentSnake) => {
+      const head = currentSnake[0]
+      const nextHead = head + direction
+      const hitWall = nextHead < 0 || nextHead >= 225 || (head % 15 === 0 && direction === -1) || (head % 15 === 14 && direction === 1)
+      if (hitWall || currentSnake.includes(nextHead)) {
+        setSnakeScore(0)
+        setSnakeGem(randomIndex(225))
+        setMessage('Rainbow Snake restarted — try another path! 🐍')
+        return [112, 111, 110]
+      }
+
+      const nextSnake = [nextHead, ...currentSnake]
+      if (nextHead === snakeGem) {
+        setSnakeScore((score) => score + 1)
+        setSnakeGem(randomIndex(225))
+        setMessage('Yum! You collected a gem! 💎')
+        return nextSnake
+      }
+
+      return nextSnake.slice(0, currentSnake.length)
+    })
+  }
+
+  function renderChoiceGame(game: ChoiceGameKey) {
     const rounds = getRounds(game)
     const round = rounds[roundIndexes[game]]
     return (
@@ -378,7 +461,27 @@ function App() {
       <p className="status" role="status">{message}</p>
 
       <section className="play-panel">
-        {selectedGame === 'memory' ? (
+        {selectedGame === 'snake' ? (
+          <article className="challenge-card snake">
+            <p className="round-count">Score: {snakeScore}</p>
+            <h2>Rainbow Snake</h2>
+            <p className="snake-help">Use the big buttons to slither around, collect gems, and avoid walls.</p>
+            <div className="snake-board" aria-label="Rainbow Snake game board">
+              {Array.from({ length: 225 }, (_, index) => {
+                const isHead = snakeCells[0] === index
+                const isBody = snakeCells.includes(index)
+                const isGem = snakeGem === index
+                return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? '💎' : ''}</span>
+              })}
+            </div>
+            <div className="snake-controls">
+              <button type="button" onClick={() => moveSnake(-15)} disabled={snakeDirection === 15}>↑</button>
+              <button type="button" onClick={() => moveSnake(-1)} disabled={snakeDirection === 1}>←</button>
+              <button type="button" onClick={() => moveSnake(1)} disabled={snakeDirection === -1}>→</button>
+              <button type="button" onClick={() => moveSnake(15)} disabled={snakeDirection === -15}>↓</button>
+            </div>
+          </article>
+        ) : selectedGame === 'memory' ? (
           <article className="challenge-card memory">
             <p className="round-count">Memory board {memoryBoardIndex + 1} of {memoryBoards.length}</p>
             <h2>Memory Match</h2>
