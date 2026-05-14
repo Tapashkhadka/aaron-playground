@@ -1675,3 +1675,254 @@ h1 {
     min-height: 40px;
   }
 }
+
+/* Whole-site mobile friendliness audit pass */
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+main {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+button,
+a {
+  min-height: 44px;
+}
+
+.hero,
+.game-library,
+.status,
+.play-panel {
+  width: min(1120px, 100%);
+}
+
+.hero {
+  min-height: auto;
+}
+
+.challenge-card,
+.game-library,
+.selected-game-strip,
+.supervision-card {
+  max-width: 100%;
+}
+
+.question,
+.intro,
+.game-card-copy span,
+.selected-game-strip div span,
+.snake-help {
+  overflow-wrap: anywhere;
+}
+
+.memory-grid,
+.answer-grid,
+.bubble-board,
+.tile-puzzle,
+.snake-board {
+  max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  main {
+    padding: 12px;
+  }
+
+  .hero {
+    gap: 18px;
+    padding: 24px 0 18px;
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 14vw, 4rem);
+    letter-spacing: -0.07em;
+  }
+
+  .intro {
+    font-size: 1rem;
+  }
+
+  .primary-action {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-card {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 10px;
+    border-radius: 24px;
+  }
+
+  .hero-card span {
+    min-height: 68px;
+    border-radius: 18px;
+    font-size: clamp(1.8rem, 9vw, 2.8rem);
+  }
+
+  .library-heading,
+  .hero-copy {
+    text-align: left;
+  }
+
+  .library-heading h2 {
+    font-size: clamp(1.65rem, 9vw, 2.55rem);
+  }
+
+  .selected-game-strip {
+    padding: 10px;
+    border-radius: 20px;
+  }
+
+  .selected-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .game-library .game-tab {
+    min-width: min(82vw, 300px);
+  }
+
+  .status {
+    position: sticky;
+    top: 0;
+    z-index: 19;
+    font-size: 0.95rem;
+    padding: 11px 13px;
+  }
+
+  .challenge-card {
+    padding: 16px;
+    border-radius: 26px;
+  }
+
+  .challenge-card h2 {
+    font-size: clamp(1.55rem, 9vw, 2.35rem);
+  }
+
+  .game-card-topbar {
+    align-items: center;
+  }
+
+  .round-count {
+    font-size: 0.78rem;
+  }
+
+  .question {
+    font-size: clamp(1.45rem, 9vw, 2.4rem);
+  }
+
+  .answer-grid,
+  .visual-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .visual-grid .visual-answer {
+    min-height: 104px;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: 1fr;
+    text-align: left;
+    justify-content: start;
+  }
+
+  .choice-swatch,
+  .choice-shape,
+  .choice-number-tower,
+  .choice-stack,
+  .choice-paw,
+  .choice-flask,
+  .choice-letter-card,
+  .choice-number-card {
+    width: 58px;
+    height: 58px;
+  }
+
+  .memory-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .memory-card {
+    min-height: 72px;
+  }
+
+  .tile-puzzle {
+    width: 100%;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .tile {
+    border-radius: 16px;
+  }
+
+  .bubble-board {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 10px;
+    gap: 9px;
+  }
+
+  .snake-board {
+    width: min(100%, 420px);
+    padding: 7px;
+    gap: 2px;
+  }
+
+  .snake-controls {
+    width: min(100%, 300px);
+  }
+}
+
+@media (max-width: 380px) {
+  main {
+    padding: 9px;
+  }
+
+  .hero-card {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .game-library {
+    padding: 10px;
+  }
+
+  .selected-game-strip {
+    grid-template-columns: 1fr;
+    text-align: center;
+    justify-items: center;
+  }
+
+  .game-library .game-tab {
+    min-width: 84vw;
+  }
+
+  .challenge-card {
+    padding: 12px;
+  }
+
+  .memory-grid {
+    gap: 7px;
+  }
+
+  .memory-card {
+    min-height: 62px;
+    font-size: 1.5rem;
+  }
+
+  .bubble-board {
+    gap: 7px;
+  }
+}
