@@ -36,20 +36,14 @@ type GameInfo = {
 }
 
 const gameInfo: GameInfo[] = [
-  { key: 'math', title: 'Math Quest', description: 'Tap number cards and solve fast.', icon: 'Math', art: 'math', level: 'Ages 5+' },
-  { key: 'snake', title: 'Rainbow Snake', description: 'Arcade action: collect gems and grow.', icon: 'Snake', art: 'snake', level: 'All ages' },
-  { key: 'bubbles', title: 'Bubble Pop', description: 'Pop the exact number of bubbles.', icon: 'Bubble', art: 'bubbles', level: 'Ages 2+' },
-  { key: 'puzzles', title: 'Puzzle Portal', description: 'Slide tiles into the right order.', icon: 'Puzzle', art: 'puzzle', level: 'Ages 6+' },
-  { key: 'science', title: 'Science Lab', description: 'Tap lab cards and discover facts.', icon: 'Lab', art: 'science', level: 'Ages 6+' },
-  { key: 'memory', title: 'Memory Match', description: 'Flip custom cards and find pairs.', icon: 'Memory', art: 'memory', level: 'Ages 3+' },
-  { key: 'patterns', title: 'Pattern Pop', description: 'Complete visual pattern trails.', icon: 'Pattern', art: 'pattern', level: 'Ages 4+' },
-  { key: 'spelling', title: 'Word Builder', description: 'Build words from picture cards.', icon: 'Words', art: 'spelling', level: 'Ages 4+' },
-  { key: 'colors', title: 'Color Quest', description: 'Tap bright paint tiles.', icon: 'Color', art: 'colors', level: 'Ages 2+' },
-  { key: 'counting', title: 'Counting Garden', description: 'Count custom bubbles and blocks.', icon: 'Count', art: 'counting', level: 'Ages 2+' },
-  { key: 'shapes', title: 'Shape Safari', description: 'Tap drawn shapes on screen.', icon: 'Shapes', art: 'shapes', level: 'Ages 2+' },
-  { key: 'animals', title: 'Animal Sounds', description: 'Match sound cards with animal art.', icon: 'Animal', art: 'animals', level: 'Ages 2+' },
-  { key: 'bigger', title: 'Bigger or Smaller', description: 'Compare visual stacks.', icon: 'Compare', art: 'bigger', level: 'Ages 4+' },
-  { key: 'riddles', title: 'Riddle Rocket', description: 'Brain teasers for older kids and adults.', icon: 'Riddle', art: 'riddles', level: 'Ages 8+' },
+  { key: 'math', title: 'Math', description: 'Numbers and quick puzzles.', icon: 'Math', art: 'math', level: '5+' },
+  { key: 'bubbles', title: 'Bubble Pop', description: 'Pop the right number.', icon: 'Bubble', art: 'bubbles', level: '2+' },
+  { key: 'snake', title: 'Snake', description: 'Collect gems and grow.', icon: 'Snake', art: 'snake', level: 'All' },
+  { key: 'puzzles', title: 'Puzzle', description: 'Slide tiles into order.', icon: 'Puzzle', art: 'puzzle', level: '6+' },
+  { key: 'memory', title: 'Memory', description: 'Find matching pairs.', icon: 'Memory', art: 'memory', level: '3+' },
+  { key: 'colors', title: 'Colors', description: 'Tap matching colors.', icon: 'Color', art: 'colors', level: '2+' },
+  { key: 'shapes', title: 'Shapes', description: 'Learn and match shapes.', icon: 'Shapes', art: 'shapes', level: '2+' },
+  { key: 'science', title: 'Science', description: 'Explore simple facts.', icon: 'Lab', art: 'science', level: '6+' },
 ]
 
 function numberChoices(correct: number): string[] {
@@ -592,17 +586,9 @@ function App() {
       <section className="hero" aria-labelledby="page-title">
         <div className="hero-copy">
           <p className="eyebrow">Aaron Playground</p>
-          <h1 id="page-title">Fun brain games for curious kids.</h1>
-          <p className="intro">
-            Play simple tap-friendly games with 100+ rounds in every category. Built for phones, tablets, and desktops.
-          </p>
-          <a className="primary-action" href="#games">Start playing</a>
-        </div>
-        <div className="hero-card" aria-hidden="true">
-          <span>🧮</span>
-          <span>🔬</span>
-          <span>🎮</span>
-          <span>🧠</span>
+          <h1 id="page-title">Choose a game. Start playing.</h1>
+          <p className="intro">A clean, mobile-friendly playground for learning games, puzzles, and arcade play.</p>
+          <a className="primary-action" href="#games">Browse games</a>
         </div>
       </section>
 
@@ -610,15 +596,15 @@ function App() {
         <div className="library-heading">
           <div>
             <p className="eyebrow">Game Library</p>
-            <h2 id="game-library-title">Pick a game, then play instantly.</h2>
+            <h2 id="game-library-title">Games</h2>
           </div>
-          <p>Swipe the cards, tap a game, and Aaron Playground jumps you right to the play area.</p>
+          <p>Tap any card to jump straight into play.</p>
         </div>
 
         <div className="selected-game-strip" aria-live="polite">
           <span className={`selected-icon icon-${currentInfo.art}`}>{currentInfo.icon}</span>
           <div>
-            <strong>Now playing: {currentInfo.title}</strong>
+            <strong>{currentInfo.title}</strong>
             <span>{currentInfo.description}</span>
           </div>
           <div className="hub-actions">
