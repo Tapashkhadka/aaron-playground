@@ -1,23 +1,13 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import './App.css'
 
+// ===== TYPE DEFINITIONS =====
 type GameKey =
-  | 'math'
-  | 'science'
-  | 'memory'
-  | 'patterns'
-  | 'spelling'
-  | 'colors'
-  | 'counting'
-  | 'shapes'
-  | 'animals'
-  | 'bigger'
-  | 'riddles'
-  | 'puzzles'
-  | 'snake'
-  | 'bubbles'
+  | 'math' | 'science' | 'memory' | 'patterns' | 'spelling' | 'colors'
+  | 'counting' | 'shapes' | 'animals' | 'bigger' | 'riddles' | 'puzzles'
+  | 'snake' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards'
 
-type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles' | 'bubbles'>
+type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards'>
 
 type ChoiceRound = {
   prompt: string
@@ -26,26 +16,50 @@ type ChoiceRound = {
   helper?: string
 }
 
-type GameInfo = {
-  key: GameKey
-  title: string
-  description: string
-  icon: string
-  art: string
-  level: string
-}
+type Category = 'play' | 'study' | 'create' | 'braingames'
 
-const gameInfo: GameInfo[] = [
-  { key: 'math', title: 'Math', description: 'Numbers and quick puzzles.', icon: 'Math', art: 'math', level: '5+' },
-  { key: 'bubbles', title: 'Bubble Pop', description: 'Pop the right number.', icon: 'Bubble', art: 'bubbles', level: '2+' },
-  { key: 'snake', title: 'Snake', description: 'Collect gems and grow.', icon: 'Snake', art: 'snake', level: 'All' },
-  { key: 'puzzles', title: 'Puzzle', description: 'Slide tiles into order.', icon: 'Puzzle', art: 'puzzle', level: '6+' },
-  { key: 'memory', title: 'Memory', description: 'Find matching pairs.', icon: 'Memory', art: 'memory', level: '3+' },
-  { key: 'colors', title: 'Colors', description: 'Tap matching colors.', icon: 'Color', art: 'colors', level: '2+' },
-  { key: 'shapes', title: 'Shapes', description: 'Learn and match shapes.', icon: 'Shapes', art: 'shapes', level: '2+' },
-  { key: 'science', title: 'Science', description: 'Explore simple facts.', icon: 'Lab', art: 'science', level: '6+' },
+// ===== GAME DEFINITIONS =====
+const allGames = [
+  // Play games (existing)
+  { key: 'math' as GameKey, title: 'Math Quest', description: 'Add, subtract, multiply!', icon: '🔢', level: '5+' },
+  { key: 'science' as GameKey, title: 'Science Lab', description: 'Explore fun facts!', icon: '🔬', level: '6+' },
+  { key: 'memory' as GameKey, title: 'Memory Match', description: 'Find matching pairs!', icon: '🧠', level: '3+' },
+  { key: 'snake' as GameKey, title: 'Rainbow Snake', description: 'Collect gems & grow!', icon: '🐍', level: 'All' },
+  { key: 'puzzles' as GameKey, title: 'Puzzle Portal', description: 'Slide tiles in order!', icon: '🧩', level: '6+' },
+  { key: 'bubbles' as GameKey, title: 'Bubble Pop', description: 'Pop the right count!', icon: '🫧', level: '2+' },
+  { key: 'colors' as GameKey, title: 'Color Quest', description: 'Match the colors!', icon: '🎨', level: '2+' },
+  { key: 'shapes' as GameKey, title: 'Shape Wizard', description: 'Learn your shapes!', icon: '🔺', level: '2+' },
+  { key: 'animals' as GameKey, title: 'Animal Sounds', description: 'What do they say?', icon: '🐾', level: '2+' },
+  { key: 'spelling' as GameKey, title: 'Spelling Bee', description: 'Match the word!', icon: '📝', level: '5+' },
+  { key: 'counting' as GameKey, title: 'Counting Stars', description: 'Count the emojis!', icon: '🔢', level: '2+' },
+  { key: 'patterns' as GameKey, title: 'Pattern Puzzles', description: 'Find what comes next!', icon: '🔷', level: '4+' },
+  { key: 'riddles' as GameKey, title: 'Riddle Me', description: 'Solve fun riddles!', icon: '🤔', level: '6+' },
+  { key: 'bigger' as GameKey, title: 'Bigger or Smaller', description: 'Compare numbers!', icon: '📏', level: '3+' },
+  // New brain games
+  { key: 'tictactoe' as GameKey, title: 'Tic-Tac-Toe', description: '⭐ vs 🌙 battle!', icon: '⭐', level: '4+' },
+  // New study
+  { key: 'flashcards' as GameKey, title: 'Flash Cards', description: 'Learn cool facts!', icon: '📇', level: '3+' },
+  // Create
+  { key: 'drawing' as GameKey, title: 'Drawing Pad', description: 'Draw anything!', icon: '✏️', level: '2+' },
+  // Brain games
+  { key: 'typing' as GameKey, title: 'Quick Typing', description: 'Type letters & words!', icon: '⌨️', level: '6+' },
 ]
 
+const gamesByCategory: Record<Category, GameKey[]> = {
+  play: ['math', 'science', 'memory', 'snake', 'puzzles', 'bubbles', 'colors', 'shapes', 'animals', 'spelling', 'counting', 'patterns', 'riddles', 'bigger'],
+  study: ['flashcards'],
+  create: ['drawing'],
+  braingames: ['tictactoe', 'typing'],
+}
+
+const categoryInfo: Record<Category, { label: string; icon: string }> = {
+  play: { label: 'Play', icon: '🎮' },
+  study: { label: 'Study', icon: '📚' },
+  create: { label: 'Create', icon: '🎨' },
+  braingames: { label: 'Brain Games', icon: '🧠' },
+}
+
+// ===== EXISTING GAME DATA (preserved) =====
 function numberChoices(correct: number): string[] {
   const wrongOne = correct + 1
   const wrongTwo = Math.max(0, correct - 1)
@@ -122,12 +136,12 @@ const colorObjects = [
   ['apple 🍎', 'Red'], ['banana 🍌', 'Yellow'], ['grass 🌱', 'Green'], ['sky ☁️', 'Blue'], ['pumpkin 🎃', 'Orange'],
   ['grape 🍇', 'Purple'], ['snowman ⛄', 'White'], ['chocolate 🍫', 'Brown'], ['heart 💗', 'Pink'], ['night sky 🌌', 'Black'],
 ]
-const colorChoices = ['Red', 'Yellow', 'Green', 'Blue', 'Orange', 'Purple', 'White', 'Brown', 'Pink', 'Black']
+const colorChoicesList = ['Red', 'Yellow', 'Green', 'Blue', 'Orange', 'Purple', 'White', 'Brown', 'Pink', 'Black']
 const colorRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
   const [thing, correct] = colorObjects[index % colorObjects.length]
   return {
     prompt: `Tap the color of the ${thing}`,
-    answers: [correct, colorChoices[(index + 2) % colorChoices.length], colorChoices[(index + 5) % colorChoices.length]],
+    answers: [correct, colorChoicesList[(index + 2) % colorChoicesList.length], colorChoicesList[(index + 5) % colorChoicesList.length]],
     correct,
     helper: `Color round ${index + 1} of 120`,
   }
@@ -217,22 +231,100 @@ const riddleRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
   return { prompt, answers, correct, helper: `Riddle ${index + 1} of 120` }
 })
 
-function getRounds(key: ChoiceGameKey): ChoiceRound[] {
-  const rounds: Record<ChoiceGameKey, ChoiceRound[]> = {
-    math: mathQuestions,
-    science: scienceQuestions,
-    patterns: patternRounds,
-    spelling: spellingRounds,
-    colors: colorRounds,
-    counting: countingRounds,
-    shapes: shapeRounds,
-    animals: animalRounds,
-    bigger: biggerRounds,
-    riddles: riddleRounds,
-  }
-  return rounds[key as ChoiceGameKey]
+// ===== NEW: FLASHCARD DATA =====
+const flashcardCategories = {
+  Animals: [
+    { emoji: '🦁', title: 'Lion', fact: 'A group of lions is called a pride. Lions are the only cats that live in groups!' },
+    { emoji: '🐘', title: 'Elephant', fact: 'Elephants are the largest land animals. They can weigh up to 6,000 kg!' },
+    { emoji: '🐬', title: 'Dolphin', fact: 'Dolphins sleep with one eye open! They rest half their brain at a time.' },
+    { emoji: '🦋', title: 'Butterfly', fact: 'Butterflies taste with their feet! They have sensors on their legs.' },
+    { emoji: '🦉', title: 'Owl', fact: 'Owls can rotate their heads 270 degrees! They have 14 neck bones.' },
+    { emoji: '🐧', title: 'Penguin', fact: 'Penguins can jump up to 6 feet high! They are excellent swimmers.' },
+    { emoji: '🦎', title: 'Chameleon', fact: 'Chameleons can move their eyes in two different directions at once!' },
+    { emoji: '🐝', title: 'Honey Bee', fact: 'A honey bee can fly at 15 miles per hour and visits up to 100 flowers per trip!' },
+  ],
+  Planets: [
+    { emoji: '☀️', title: 'The Sun', fact: 'The Sun is a star! It is 109 times wider than Earth and 4.6 billion years old.' },
+    { emoji: '🌍', title: 'Earth', fact: 'Earth is the only planet known to have life. About 71% is covered in water!' },
+    { emoji: '🌙', title: 'The Moon', fact: 'The Moon is slowly moving away from Earth — about 3.8 cm every year!' },
+    { emoji: '🔴', title: 'Mars', fact: 'Mars is called the Red Planet because of iron oxide (rust) on its surface.' },
+    { emoji: '🪐', title: 'Saturn', fact: 'Saturn\'s rings are made of ice and rock. It\'s the least dense planet — it could float in water!' },
+    { emoji: '🌊', title: 'Neptune', fact: 'Neptune has the strongest winds in the solar system — up to 2,100 km/h!' },
+    { emoji: '☄️', title: 'Jupiter', fact: 'Jupiter is the largest planet. Its Great Red Spot is a storm bigger than Earth!' },
+    { emoji: '🌕', title: 'Pluto', fact: 'Pluto is a dwarf planet. One year on Pluto is 248 Earth years long!' },
+  ],
+  'Human Body': [
+    { emoji: '🫀', title: 'Heart', fact: 'Your heart beats about 100,000 times a day! That\'s 35 million times a year.' },
+    { emoji: '🧠', title: 'Brain', fact: 'Your brain sends signals at 268 miles per hour! It uses 20% of your body\'s energy.' },
+    { emoji: '🦴', title: 'Bones', fact: 'Babies are born with 300 bones, but adults have 206. Some bones fuse together as you grow!' },
+    { emoji: '👁️', title: 'Eyes', fact: 'Your eyes can distinguish about 10 million different colors! They blink 15-20 times per minute.' },
+    { emoji: '👅', title: 'Tongue', fact: 'Your tongue has about 10,000 taste buds! They renew every 10-14 days.' },
+    { emoji: '🫁', title: 'Lungs', fact: 'Your lungs have about 300 million tiny air sacs! They can hold about 6 liters of air.' },
+    { emoji: '💪', title: 'Muscles', fact: 'You have over 600 muscles in your body! The strongest is the masseter (jaw muscle).' },
+    { emoji: '🩸', title: 'Blood', fact: 'Your body has about 5 liters of blood! Red blood cells travel through your body in 20 seconds.' },
+  ],
+  'Fun Facts': [
+    { emoji: '🌈', title: 'Rainbows', fact: 'No two people see the same rainbow! Each person sees a different set of colors from their own angle.' },
+    { emoji: '🍿', title: 'Popcorn', fact: 'Popcorn has been around for thousands of years! It was discovered by ancient Aztecs.' },
+    { emoji: '🍌', title: 'Bananas', fact: 'Bananas are berries! But strawberries are not actually berries.' },
+    { emoji: '🐙', title: 'Octopus', fact: 'Octopuses have three hearts! Two pump blood to the gills, one to the rest of the body.' },
+    { emoji: '🌊', title: 'Ocean', fact: 'We have explored less than 5% of the ocean! More people have been to the Moon than the deep sea.' },
+    { emoji: '🍯', title: 'Honey', fact: 'Honey never spoils! Archaeologists found 3,000-year-old honey that was still edible.' },
+    { emoji: '❄️', title: 'Snowflakes', fact: 'Every snowflake is unique! They form differently based on temperature and humidity.' },
+    { emoji: '🌋', title: 'Volcanoes', fact: 'There are about 1,500 active volcanoes on Earth! Most are underwater.' },
+  ],
 }
 
+const funFactsList = [
+  'A day on Venus is longer than a year on Venus!',
+  'Octopuses have three hearts and blue blood!',
+  'Honey never spoils — ever!',
+  'A group of flamingos is called a "flamboyance"!',
+  'Bananas are berries, but strawberries aren\'t!',
+  'The Eiffel Tower grows 6 inches taller in the summer!',
+  'There are more trees on Earth than stars in the Milky Way!',
+  'The world\'s largest pizza was 13,580 square feet!',
+  'A Jiffy is an actual unit of time — 1/100th of a second!',
+  'The first oranges weren\'t orange — they were green!',
+  'Butterflies taste with their feet!',
+  'A day on Mars is only 37 minutes longer than Earth\'s!',
+  'The Moon is moving away from Earth at 3.8 cm per year!',
+  'There are more possible chess games than atoms in the universe!',
+  'Your nose can remember 50,000 different scents!',
+  'Cows have best friends and get stressed when separated!',
+  'A cloud can weigh over a million pounds!',
+  'Sloths can hold their breath longer than dolphins!',
+]
+
+const dailyChallengeIdeas = [
+  { emoji: '🧮', title: 'Math Blitz', desc: 'Solve as many math problems as you can!' },
+  { emoji: '🧠', title: 'Memory Master', desc: 'Beat the memory matching game!' },
+  { emoji: '🔬', title: 'Science Explorer', desc: 'Answer science quiz questions!' },
+  { emoji: '🐍', title: 'Snake Champion', desc: 'Collect 5 gems in Rainbow Snake!' },
+  { emoji: '🧩', title: 'Puzzle Solver', desc: 'Solve the sliding puzzle!' },
+  { emoji: '📝', title: 'Spelling Star', desc: 'Practice your spelling words!' },
+  { emoji: '🤔', title: 'Riddle Master', desc: 'Solve tricky riddles!' },
+  { emoji: '📏', title: 'Number Compare', desc: 'Master bigger vs smaller!' },
+  { emoji: '🔷', title: 'Pattern Pro', desc: 'Complete the patterns!' },
+  { emoji: '✏️', title: 'Creative Creator', desc: 'Draw something amazing!' },
+]
+
+const typingLetterSets = {
+  letters: [
+    { display: 'A', input: 'a' }, { display: 'B', input: 'b' }, { display: 'C', input: 'c' },
+    { display: 'D', input: 'd' }, { display: 'E', input: 'e' }, { display: 'F', input: 'f' },
+    { display: 'G', input: 'g' }, { display: 'H', input: 'h' }, { display: 'I', input: 'i' },
+    { display: 'J', input: 'j' }, { display: 'K', input: 'k' }, { display: 'L', input: 'l' },
+    { display: 'M', input: 'm' }, { display: 'N', input: 'n' }, { display: 'O', input: 'o' },
+    { display: 'P', input: 'p' }, { display: 'Q', input: 'q' }, { display: 'R', input: 'r' },
+    { display: 'S', input: 's' }, { display: 'T', input: 't' }, { display: 'U', input: 'u' },
+    { display: 'V', input: 'v' }, { display: 'W', input: 'w' }, { display: 'X', input: 'x' },
+    { display: 'Y', input: 'y' }, { display: 'Z', input: 'z' },
+  ],
+  words: ['CAT', 'DOG', 'SUN', 'FISH', 'BIRD', 'STAR', 'MOON', 'BALL', 'TREE', 'BOOK', 'APPLE', 'HAPPY', 'SMILE', 'WATER', 'PLAY'],
+}
+
+// ===== HELPER FUNCTIONS =====
 function randomIndex(max: number): number {
   const values = new Uint32Array(1)
   globalThis.crypto.getRandomValues(values)
@@ -250,20 +342,80 @@ function shuffleAnswers(answers: string[]): string[] {
   return shuffled
 }
 
+function getRounds(key: ChoiceGameKey): ChoiceRound[] {
+  const rounds: Record<ChoiceGameKey, ChoiceRound[]> = {
+    math: mathQuestions,
+    science: scienceQuestions,
+    patterns: patternRounds,
+    spelling: spellingRounds,
+    colors: colorRounds,
+    counting: countingRounds,
+    shapes: shapeRounds,
+    animals: animalRounds,
+    bigger: biggerRounds,
+    riddles: riddleRounds,
+  }
+  return rounds[key]
+}
+
+function getDailySeed(): number {
+  const now = new Date()
+  return now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate()
+}
+
+function getDailyChallenge() {
+  const seed = getDailySeed()
+  return dailyChallengeIdeas[seed % dailyChallengeIdeas.length]
+}
+
+// ===== STREAK TRACKING =====
+function getStreakData(): { count: number; lastDate: string } {
+  try {
+    const raw = localStorage.getItem('aaron-streak')
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return { count: 0, lastDate: '' }
+}
+
+function updateStreak(): number {
+  const today = new Date().toISOString().slice(0, 10)
+  const data = getStreakData()
+  if (data.lastDate === today) return data.count
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+  const newCount = data.lastDate === yesterday ? data.count + 1 : 1
+  localStorage.setItem('aaron-streak', JSON.stringify({ count: newCount, lastDate: today }))
+  return newCount
+}
+
+// ===== DRAWING COLORS =====
+const drawColors = ['#FF6B6B', '#FFD93D', '#6BCB77', '#AA96DA', '#2D3436', '#FF9500', '#30D5C8', '#FF69B4', '#4A90D9', '#000000']
+const drawSizes = [3, 6, 10, 16]
+
+// ===== MAIN APP COMPONENT =====
 function App() {
-  const [selectedGame, setSelectedGame] = useState<GameKey>('math')
+  // State
+  const [hasParentAgreement, setHasParentAgreement] = useState(false)
+  const [agreementMessage, setAgreementMessage] = useState('')
+  const [category, setCategory] = useState<Category>('play')
+  const [activeGame, setActiveGame] = useState<GameKey | null>(null)
+  const [message, setMessage] = useState('🌟 Welcome to Aaron Playground! Pick something fun!')
+
+  // Star / Achievement state
+  const [starScore, setStarScore] = useState(() => {
+    try { return Number(localStorage.getItem('aaron-stars')) || 0 } catch { return 0 }
+  })
+  const [dailyStreak, setDailyStreak] = useState(0)
+  const [showMilestone, setShowMilestone] = useState<string | null>(null)
+  const [confetti, setConfetti] = useState<{ id: number; x: number; color: string }[]>([])
+
+  // Fun facts carousel
+  const [funFactIndex, setFunFactIndex] = useState(0)
+
+  // Existing game state
   const [mathStartIndex] = useState(() => randomIndex(mathQuestions.length))
   const [roundIndexes, setRoundIndexes] = useState<Record<ChoiceGameKey, number>>(() => ({
-    math: mathStartIndex,
-    science: 0,
-    patterns: 0,
-    spelling: 0,
-    colors: 0,
-    counting: 0,
-    shapes: 0,
-    animals: 0,
-    bigger: 0,
-    riddles: 0,
+    math: mathStartIndex, science: 0, patterns: 0, spelling: 0, colors: 0,
+    counting: 0, shapes: 0, animals: 0, bigger: 0, riddles: 0,
   }))
   const [answerOrders, setAnswerOrders] = useState<Record<ChoiceGameKey, string[]>>(() => ({
     math: shuffleAnswers(mathQuestions[mathStartIndex].answers),
@@ -278,47 +430,93 @@ function App() {
     riddles: shuffleAnswers(riddleRounds[0].answers),
   }))
   const [memoryBoardIndex, setMemoryBoardIndex] = useState(0)
-  const [message, setMessage] = useState('Pick a game and start playing!')
-  const [hasParentAgreement, setHasParentAgreement] = useState(false)
-  const [agreementMessage, setAgreementMessage] = useState('')
   const [matched, setMatched] = useState<string[]>([])
   const [flipped, setFlipped] = useState<number[]>([])
   const [snakeCells, setSnakeCells] = useState([112, 111, 110])
   const [snakeDirection, setSnakeDirection] = useState(1)
   const [snakeGem, setSnakeGem] = useState(57)
   const [snakeScore, setSnakeScore] = useState(0)
-  const [fullScreenGame, setFullScreenGame] = useState<GameKey | null>(null)
   const [puzzleTiles, setPuzzleTiles] = useState([1, 2, 3, 4, 5, 6, 7, 8, 0])
   const [puzzleMoves, setPuzzleMoves] = useState(0)
   const [bubbleTarget, setBubbleTarget] = useState(5)
   const [poppedBubbles, setPoppedBubbles] = useState<number[]>([])
-  const [starScore, setStarScore] = useState(0)
-  const playPanelRef = useRef<HTMLElement | null>(null)
 
-  const currentBoard = memoryBoards[memoryBoardIndex]
-  const currentInfo = gameInfo.find((game) => game.key === selectedGame) ?? gameInfo[0]
+  // Tic-Tac-Toe state
+  const [tttBoard, setTttBoard] = useState<string[]>(Array(9).fill(''))
+  const [tttTurn, setTttTurn] = useState<'⭐' | '🌙'>('⭐')
+  const [tttWinner, setTttWinner] = useState<string | null>(null)
+  const [tttWinningLine, setTttWinningLine] = useState<number[]>([])
 
-  function gameCardClass(game: GameKey, extraClass = '') {
-    return `challenge-card ${game} ${extraClass} ${fullScreenGame === game ? 'game-fullscreen' : ''}`.trim()
+  // Drawing state
+  const [drawColor, setDrawColor] = useState('#FF6B6B')
+  const [drawSize, setDrawSize] = useState(6)
+  const [isDrawing, setIsDrawing] = useState(false)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null)
+  const drawHistoryRef = useRef<ImageData[]>([])
+
+  // Typing state
+  const [typingMode, setTypingMode] = useState<'letters' | 'words'>('letters')
+  const [typingTarget, setTypingTarget] = useState('')
+  const [typingCorrect, setTypingCorrect] = useState(0)
+  const [typingTotal, setTypingTotal] = useState(0)
+  const [typingInput, setTypingInput] = useState('')
+  const [typingResult, setTypingResult] = useState<'idle' | 'correct' | 'incorrect'>('idle')
+
+  // Flashcards state
+  const [flashcardCat, setFlashcardCat] = useState('Animals')
+  const [flashcardIdx, setFlashcardIdx] = useState(0)
+  const [flashcardFlipped, setFlashcardFlipped] = useState(false)
+
+  // Refs
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  // ===== INIT EFFECTS =====
+  useEffect(() => {
+    setDailyStreak(updateStreak())
+    // Pick random typing target
+    pickTypingTarget('letters')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('aaron-stars', String(starScore))
+    // Check milestones
+    const milestones = [10, 25, 50, 100, 200, 500]
+    for (const m of milestones) {
+      if (starScore >= m && starScore - 1 < m) {
+        triggerMilestone(m)
+        break
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [starScore])
+
+  // ===== STAR / ACHIEVEMENT =====
+  function addStars(amount: number) {
+    setStarScore((s) => s + amount)
+    if (amount > 0) {
+      triggerConfetti()
+    }
   }
 
-  function renderFullScreenButton(game: GameKey) {
-    const isFullScreen = fullScreenGame === game
-    return (
-      <button type="button" className="fullscreen-toggle" onClick={() => setFullScreenGame(isFullScreen ? null : game)}>
-        {isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
-      </button>
-    )
+  function triggerMilestone(count: number) {
+    setShowMilestone(`🎉 Amazing! You've earned ${count} stars! 🌟`)
+    triggerConfetti()
   }
 
-  function chooseGame(game: GameKey) {
-    setSelectedGame(game)
-    setFullScreenGame(null)
-    window.setTimeout(() => {
-      playPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 50)
+  function triggerConfetti() {
+    const colors = ['#FF6B6B', '#FFD93D', '#6BCB77', '#AA96DA', '#FF9500', '#30D5C8', '#FF69B4']
+    const pieces = Array.from({ length: 40 }, (_, i) => ({
+      id: Date.now() + i,
+      x: Math.random() * 100,
+      color: colors[i % colors.length],
+    }))
+    setConfetti(pieces)
+    setTimeout(() => setConfetti([]), 3000)
   }
 
+  // ===== EXISTING GAME LOGIC =====
   function answerRound(game: ChoiceGameKey, choice: string) {
     const rounds = getRounds(game)
     const index = roundIndexes[game]
@@ -330,8 +528,12 @@ function App() {
       if (rounds.length > 1 && nextIndex === index) nextIndex = (nextIndex + 1) % rounds.length
     }
 
-    if (choice === current.correct) setStarScore((score) => score + 1)
-    setMessage(choice === current.correct ? 'Awesome answer! 🌟' : `Good try! The answer was ${current.correct}.`)
+    if (choice === current.correct) {
+      addStars(1)
+      setMessage('Awesome answer! 🌟')
+    } else {
+      setMessage(`Good try! The answer was ${current.correct}.`)
+    }
     setRoundIndexes((currentIndexes) => ({ ...currentIndexes, [game]: nextIndex }))
     setAnswerOrders((currentOrders) => ({ ...currentOrders, [game]: shuffleAnswers(rounds[nextIndex].answers) }))
   }
@@ -344,12 +546,13 @@ function App() {
 
     if (nextFlipped.length === 2) {
       const [first, second] = nextFlipped
+      const currentBoard = memoryBoards[memoryBoardIndex]
       if (currentBoard[first] === currentBoard[second]) {
         const nextMatched = [...matched, `${first}`, `${second}`]
         setMatched(nextMatched)
         setFlipped([])
         if (nextMatched.length === currentBoard.length) {
-          setStarScore((score) => score + 3)
+          addStars(3)
           setMessage('Board cleared! New memory board unlocked! 🧩')
           setMemoryBoardIndex((memoryBoardIndex + 1) % memoryBoards.length)
           setMatched([])
@@ -376,16 +579,14 @@ function App() {
         setMessage('Rainbow Snake restarted — try another path! 🐍')
         return [112, 111, 110]
       }
-
       const nextSnake = [nextHead, ...currentSnake]
       if (nextHead === snakeGem) {
         setSnakeScore((score) => score + 1)
         setSnakeGem(nextGem)
-        setStarScore((score) => score + 1)
+        addStars(1)
         setMessage('Yum! You collected a gem! 💎')
         return nextSnake
       }
-
       return nextSnake.slice(0, currentSnake.length)
     })
   }
@@ -394,16 +595,18 @@ function App() {
     const blankIndex = puzzleTiles.indexOf(0)
     const canMove = [blankIndex - 3, blankIndex + 3].includes(tileIndex) ||
       (Math.floor(blankIndex / 3) === Math.floor(tileIndex / 3) && [blankIndex - 1, blankIndex + 1].includes(tileIndex))
-
     if (!canMove) return
-
     const nextTiles = [...puzzleTiles]
     nextTiles[blankIndex] = nextTiles[tileIndex]
     nextTiles[tileIndex] = 0
     setPuzzleTiles(nextTiles)
     setPuzzleMoves((moves) => moves + 1)
-    if (nextTiles.join(',') === '1,2,3,4,5,6,7,8,0') setStarScore((score) => score + 5)
-    setMessage(nextTiles.join(',') === '1,2,3,4,5,6,7,8,0' ? 'Puzzle solved! Beautiful work! 🧩' : 'Nice move — keep solving!')
+    if (nextTiles.join(',') === '1,2,3,4,5,6,7,8,0') {
+      addStars(5)
+      setMessage('Puzzle solved! Beautiful work! 🧩')
+    } else {
+      setMessage('Nice move — keep solving!')
+    }
   }
 
   function shufflePuzzle() {
@@ -411,8 +614,7 @@ function App() {
     for (let move = 0; move < 80; move += 1) {
       const blankIndex = nextTiles.indexOf(0)
       const possibleMoves = [blankIndex - 3, blankIndex + 3, blankIndex - 1, blankIndex + 1].filter((tileIndex) =>
-        tileIndex >= 0 &&
-        tileIndex < 9 &&
+        tileIndex >= 0 && tileIndex < 9 &&
         (Math.abs(tileIndex - blankIndex) === 3 || Math.floor(tileIndex / 3) === Math.floor(blankIndex / 3)),
       )
       const tileIndex = possibleMoves[randomIndex(possibleMoves.length)]
@@ -426,15 +628,12 @@ function App() {
     setMessage('Puzzle shuffled — slide the numbers back in order!')
   }
 
-
   function popBubble(index: number) {
     if (poppedBubbles.includes(index)) return
-
     const nextPopped = [...poppedBubbles, index]
     setPoppedBubbles(nextPopped)
-
     if (nextPopped.length === bubbleTarget) {
-      setStarScore((score) => score + 2)
+      addStars(2)
       setMessage(`Perfect! You popped exactly ${bubbleTarget} bubbles!`)
       window.setTimeout(() => {
         setPoppedBubbles([])
@@ -448,75 +647,238 @@ function App() {
     }
   }
 
-  function renderBubbleGame() {
-    return (
-      <article className={gameCardClass('bubbles')}>
-        <div className="game-card-topbar">
-          <div>
-            <p className="round-count">Stars: {starScore}</p>
-            <h2>Bubble Pop</h2>
-          </div>
-          {renderFullScreenButton('bubbles')}
-        </div>
-        {renderGameArt('bubbles')}
-        <p className="question bubble-instruction">Pop exactly <strong>{bubbleTarget}</strong> bubbles</p>
-        <div className="bubble-board" aria-label={`Pop exactly ${bubbleTarget} bubbles`}>
-          {Array.from({ length: 12 }, (_, index) => (
-            <button
-              key={index}
-              type="button"
-              className={poppedBubbles.includes(index) ? 'bubble popped' : 'bubble'}
-              onClick={() => popBubble(index)}
-              aria-label={`Bubble ${index + 1}`}
-            >
-              <span></span>
-            </button>
-          ))}
-        </div>
-        <div className="bubble-progress" aria-hidden="true">
-          <span style={{ width: `${Math.min(100, (poppedBubbles.length / bubbleTarget) * 100)}%` }}></span>
-        </div>
-      </article>
-    )
+  // ===== TIC-TAC-TOE LOGIC =====
+  const tttWinPatterns = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6],
+  ]
+
+  function tttMove(index: number) {
+    if (tttBoard[index] || tttWinner) return
+    const newBoard = [...tttBoard]
+    newBoard[index] = tttTurn
+    setTttBoard(newBoard)
+
+    // Check winner
+    for (const pattern of tttWinPatterns) {
+      const [a, b, c] = pattern
+      if (newBoard[a] && newBoard[a] === newBoard[b] && newBoard[a] === newBoard[c]) {
+        setTttWinner(newBoard[a])
+        setTttWinningLine(pattern)
+        addStars(3)
+        setMessage(`${newBoard[a]} wins! Amazing! 🎉`)
+        return
+      }
+    }
+
+    if (newBoard.every((cell) => cell !== '')) {
+      setTttWinner('draw')
+      setMessage("It's a draw! Great game! 🎮")
+      return
+    }
+
+    setTttTurn(tttTurn === '⭐' ? '🌙' : '⭐')
   }
 
-  function renderPuzzleGame() {
-    return (
-      <article className={gameCardClass('puzzles')}>
-        <div className="game-card-topbar">
-          <div>
-            <p className="round-count">Moves: {puzzleMoves}</p>
-            <h2>Puzzle Portal</h2>
-          </div>
-          {renderFullScreenButton('puzzles')}
-        </div>
-        <p className="snake-help">Slide tiles into the empty space until the board reads 1 to 8.</p>
-        <div className="tile-puzzle" aria-label="Sliding tile puzzle">
-          {puzzleTiles.map((tile, index) => (
-            <button
-              key={`${tile}-${index}`}
-              type="button"
-              className={tile === 0 ? 'tile empty' : 'tile'}
-              onClick={() => movePuzzleTile(index)}
-              aria-label={tile === 0 ? 'Empty puzzle space' : `Move tile ${tile}`}
-            >
-              {tile !== 0 ? tile : ''}
-            </button>
-          ))}
-        </div>
-        <div className="puzzle-actions">
-          <button type="button" onClick={shufflePuzzle}>Shuffle Puzzle</button>
-          <button type="button" onClick={() => { setPuzzleTiles([1, 2, 3, 4, 5, 6, 7, 8, 0]); setPuzzleMoves(0); setMessage('Puzzle reset!') }}>Reset</button>
-        </div>
-      </article>
-    )
+  function tttReset() {
+    setTttBoard(Array(9).fill(''))
+    setTttTurn('⭐')
+    setTttWinner(null)
+    setTttWinningLine([])
+    setMessage('Tic-Tac-Toe! ⭐ goes first!')
   }
 
-
-  function renderGameArt(game: GameKey) {
-    return <div className={`custom-game-art art-${game}`} aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  // ===== DRAWING LOGIC =====
+  function initCanvas() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const rect = canvas.getBoundingClientRect()
+    canvas.width = rect.width * 2
+    canvas.height = rect.height * 2
+    ctx.scale(2, 2)
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, rect.width, rect.height)
+    ctx.strokeStyle = drawColor
+    ctx.lineWidth = drawSize
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    drawHistoryRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)]
   }
 
+  useEffect(() => {
+    if (activeGame === 'drawing') {
+      window.setTimeout(initCanvas, 50)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeGame])
+
+  function getCanvasPos(e: React.MouseEvent | React.TouchEvent): { x: number; y: number } | null {
+    const canvas = canvasRef.current
+    if (!canvas) return null
+    const rect = canvas.getBoundingClientRect()
+    if ('touches' in e) {
+      const touch = e.touches[0] || (e as React.TouchEvent).changedTouches[0]
+      if (!touch) return null
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top }
+    }
+    return { x: (e as React.MouseEvent).clientX - rect.left, y: (e as React.MouseEvent).clientY - rect.top }
+  }
+
+  function drawStart(e: React.MouseEvent | React.TouchEvent) {
+    e.preventDefault()
+    const pos = getCanvasPos(e)
+    if (!pos) return
+    setIsDrawing(true)
+    lastPosRef.current = pos
+  }
+
+  function drawMove(e: React.MouseEvent | React.TouchEvent) {
+    e.preventDefault()
+    if (!isDrawing) return
+    const pos = getCanvasPos(e)
+    if (!pos || !lastPosRef.current) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.strokeStyle = drawColor
+    ctx.lineWidth = drawSize
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.beginPath()
+    ctx.moveTo(lastPosRef.current.x, lastPosRef.current.y)
+    ctx.lineTo(pos.x, pos.y)
+    ctx.stroke()
+    lastPosRef.current = pos
+  }
+
+  function drawEnd() {
+    setIsDrawing(false)
+    lastPosRef.current = null
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    drawHistoryRef.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height))
+  }
+
+  function clearCanvas() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const rect = canvas.getBoundingClientRect()
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, rect.width, rect.height)
+    drawHistoryRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)]
+    setMessage('Canvas cleared! Start a new masterpiece! 🎨')
+  }
+
+  function undoDrawing() {
+    if (drawHistoryRef.current.length <= 1) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    drawHistoryRef.current.pop()
+    ctx.putImageData(drawHistoryRef.current[drawHistoryRef.current.length - 1], 0, 0)
+    setMessage('Undo! 🎨')
+  }
+
+  // ===== TYPING LOGIC =====
+  function pickTypingTarget(mode: 'letters' | 'words') {
+    if (mode === 'letters') {
+      const set = typingLetterSets.letters
+      setTypingTarget(set[randomIndex(set.length)].display)
+      setTypingMode('letters')
+    } else {
+      const set = typingLetterSets.words
+      setTypingTarget(set[randomIndex(set.length)])
+      setTypingMode('words')
+    }
+    setTypingInput('')
+    setTypingResult('idle')
+  }
+
+  function handleTypingInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value.toUpperCase()
+    if (val.length > typingTarget.length) return
+    setTypingInput(val)
+
+    if (val.length === typingTarget.length) {
+      setTypingTotal((t) => t + 1)
+      if (val === typingTarget) {
+        setTypingCorrect((c) => c + 1)
+        setTypingResult('correct')
+        setMessage(`Correct! ${typingTarget} 🎯`)
+        addStars(1)
+        setTimeout(() => {
+          pickTypingTarget(typingMode)
+        }, 600)
+      } else {
+        setTypingResult('incorrect')
+        setMessage(`Almost! Target was ${typingTarget}`)
+        setTimeout(() => {
+          setTypingInput('')
+          setTypingResult('idle')
+        }, 800)
+      }
+    }
+  }
+
+  function switchTypingMode(mode: 'letters' | 'words') {
+    pickTypingTarget(mode)
+    setTypingCorrect(0)
+    setTypingTotal(0)
+  }
+
+  // ===== FLASHCARD LOGIC =====
+  const currentCards = flashcardCategories[flashcardCat as keyof typeof flashcardCategories] || flashcardCategories.Animals
+  const currentCard = currentCards[flashcardIdx]
+
+  function toggleFlashcard() {
+    setFlashcardFlipped(!flashcardFlipped)
+  }
+
+  function nextFlashcard() {
+    setFlashcardFlipped(false)
+    setFlashcardIdx((flashcardIdx + 1) % currentCards.length)
+  }
+
+  function prevFlashcard() {
+    setFlashcardFlipped(false)
+    setFlashcardIdx((flashcardIdx - 1 + currentCards.length) % currentCards.length)
+  }
+
+  function switchFlashcardCat(cat: string) {
+    setFlashcardCat(cat)
+    setFlashcardIdx(0)
+    setFlashcardFlipped(false)
+  }
+
+  // ===== GAME NAVIGATION =====
+  function openGame(game: GameKey) {
+    setActiveGame(game)
+    setMessage(`🌟 Let's play ${allGames.find(g => g.key === game)?.title || game}!`)
+    if (game === 'tictactoe') {
+      tttReset()
+      setMessage('Tic-Tac-Toe! ⭐ goes first!')
+    }
+    if (game === 'typing') {
+      pickTypingTarget(typingMode)
+    }
+  }
+
+  function closeGame() {
+    setActiveGame(null)
+    updateStreak()
+    setDailyStreak(getStreakData().count)
+  }
+
+  // ===== RENDER: CHOICE GAME (existing) =====
   function renderChoiceVisual(game: ChoiceGameKey, answer: string) {
     if (game === 'colors') return <span className={`choice-swatch swatch-${answer.toLowerCase()}`}></span>
     if (game === 'shapes') return <span className={`choice-shape shape-${answer.toLowerCase()}`}></span>
@@ -533,36 +895,368 @@ function App() {
     const rounds = getRounds(game)
     const round = rounds[roundIndexes[game]]
     return (
-      <article className={gameCardClass(game)}>
+      <div className="challenge-card">
         <div className="game-card-topbar">
           <div>
-            <p className="round-count">{round.helper ?? `${currentInfo.title} round ${roundIndexes[game] + 1} of ${rounds.length}`}</p>
-            <h2>{currentInfo.title}</h2>
+            <p className="round-count">{round.helper ?? `${allGames.find(g => g.key === game)?.title || game} round ${roundIndexes[game] + 1} of ${rounds.length}`}</p>
+            <h2>{allGames.find(g => g.key === game)?.title || game}</h2>
           </div>
-          {renderFullScreenButton(game)}
         </div>
-        {renderGameArt(game)}
+        <div className={`custom-game-art art-${game === 'riddles' ? 'riddles' : game}`} aria-hidden="true"><span></span><span></span><span></span><span></span></div>
         <p className={game === 'counting' ? 'question counting-question' : 'question'}>{round.prompt}</p>
         <div className={`answer-grid visual-grid ${game}-grid`}>
           {(answerOrders[game] ?? round.answers).map((answer) => (
-            <button key={answer} className="visual-answer" onClick={() => answerRound(game, answer)} type="button">
+            <button key={answer} className="visual-answer" onClick={() => answerRound(game, answer)} type="button" aria-label={`Answer: ${answer}`}>
               {renderChoiceVisual(game, answer)}
               <span>{answer}</span>
             </button>
           ))}
         </div>
-      </article>
+      </div>
     )
   }
 
+  // ===== RENDER: ACTIVE GAME PANEL =====
+  function renderActiveGame() {
+    if (!activeGame) return null
+    const gameInfo = allGames.find(g => g.key === activeGame)!
+
+    return (
+      <div className="game-panel-overlay">
+        <div className="game-panel-header">
+          <button className="game-panel-back" onClick={closeGame} type="button" aria-label="Back to game menu">
+            ← Back
+          </button>
+          <span className="game-panel-title">{gameInfo.icon} {gameInfo.title}</span>
+          <span className="game-panel-stars">⭐ {starScore}</span>
+        </div>
+        <div className="game-panel-content" ref={panelRef}>
+          {/* CHOICE GAMES */}
+          {(['math', 'science', 'patterns', 'spelling', 'colors', 'counting', 'shapes', 'animals', 'bigger', 'riddles'] as GameKey[]).includes(activeGame) && (
+            renderChoiceGame(activeGame as ChoiceGameKey)
+          )}
+
+          {/* MEMORY GAME */}
+          {activeGame === 'memory' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <p className="round-count">Memory board {memoryBoardIndex + 1} of {memoryBoards.length}</p>
+                  <h2>Memory Match</h2>
+                </div>
+              </div>
+              <div className="memory-grid">
+                {memoryBoards[memoryBoardIndex].map((card: string, index: number) => {
+                  const isVisible = flipped.includes(index) || matched.includes(`${index}`)
+                  return (
+                    <button key={`${memoryBoardIndex}-${card}-${index}`}
+                      className={`memory-card ${matched.includes(`${index}`) ? 'matched' : ''}`}
+                      onClick={() => flipCard(index)} type="button" aria-label={isVisible ? card : 'Hidden card'}>
+                      {isVisible ? card : '?'}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* SNAKE GAME */}
+          {activeGame === 'snake' && (
+            <div className="challenge-card">
+              <div className="snake-topbar game-card-topbar">
+                <div>
+                  <p className="round-count">Score: {snakeScore}</p>
+                  <h2>Rainbow Snake</h2>
+                </div>
+              </div>
+              <p className="snake-help">Collect gems, grow longer, avoid walls!</p>
+              <div className="snake-game-shell">
+                <div className="snake-board" aria-label="Rainbow Snake game board">
+                  {Array.from({ length: 225 }, (_, index) => {
+                    const isHead = snakeCells[0] === index
+                    const isBody = snakeCells.includes(index)
+                    const isGem = snakeGem === index
+                    return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? '💎' : ''}</span>
+                  })}
+                </div>
+                <div className="snake-controls">
+                  <button type="button" onClick={() => moveSnake(-15)} disabled={snakeDirection === 15} aria-label="Move up">↑</button>
+                  <button type="button" onClick={() => moveSnake(-1)} disabled={snakeDirection === 1} aria-label="Move left">←</button>
+                  <button type="button" onClick={() => moveSnake(1)} disabled={snakeDirection === -1} aria-label="Move right">→</button>
+                  <button type="button" onClick={() => moveSnake(15)} disabled={snakeDirection === -15} aria-label="Move down">↓</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PUZZLE GAME */}
+          {activeGame === 'puzzles' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <p className="round-count">Moves: {puzzleMoves}</p>
+                  <h2>Puzzle Portal</h2>
+                </div>
+              </div>
+              <p className="snake-help">Slide tiles into the empty space until the board reads 1 to 8.</p>
+              <div className="tile-puzzle" aria-label="Sliding tile puzzle">
+                {puzzleTiles.map((tile: number, index: number) => (
+                  <button key={`${tile}-${index}`}
+                    className={tile === 0 ? 'tile empty' : 'tile'}
+                    onClick={() => movePuzzleTile(index)}
+                    type="button"
+                    aria-label={tile === 0 ? 'Empty puzzle space' : `Move tile ${tile}`}>
+                    {tile !== 0 ? tile : ''}
+                  </button>
+                ))}
+              </div>
+              <div className="puzzle-actions">
+                <button type="button" onClick={shufflePuzzle}>Shuffle</button>
+                <button type="button" onClick={() => { setPuzzleTiles([1, 2, 3, 4, 5, 6, 7, 8, 0]); setPuzzleMoves(0); setMessage('Puzzle reset!') }}>Reset</button>
+              </div>
+            </div>
+          )}
+
+          {/* BUBBLE POP */}
+          {activeGame === 'bubbles' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <p className="round-count">Stars: {starScore}</p>
+                  <h2>Bubble Pop</h2>
+                </div>
+              </div>
+              <div className={`custom-game-art art-bubbles`} aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+              <p className="question bubble-instruction">Pop exactly <strong>{bubbleTarget}</strong> bubbles</p>
+              <div className="bubble-board" aria-label={`Pop exactly ${bubbleTarget} bubbles`}>
+                {Array.from({ length: 12 }, (_, index) => (
+                  <button key={index} type="button"
+                    className={poppedBubbles.includes(index) ? 'bubble popped' : 'bubble'}
+                    onClick={() => popBubble(index)}
+                    aria-label={`Bubble ${index + 1}`}>
+                    <span></span>
+                  </button>
+                ))}
+              </div>
+              <div className="bubble-progress" aria-hidden="true">
+                <span style={{ width: `${Math.min(100, (poppedBubbles.length / bubbleTarget) * 100)}%` }}></span>
+              </div>
+            </div>
+          )}
+
+          {/* TIC-TAC-TOE */}
+          {activeGame === 'tictactoe' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <p className="round-count">⭐ vs 🌙</p>
+                  <h2>Tic-Tac-Toe</h2>
+                </div>
+              </div>
+              <p className="tictactoe-status">
+                {tttWinner === 'draw' ? "It's a draw!" :
+                 tttWinner ? `${tttWinner} wins! 🎉` :
+                 `${tttTurn}'s turn`}
+              </p>
+              <div className="tictactoe-board">
+                {tttBoard.map((cell, i) => (
+                  <button key={i} type="button"
+                    className={`tictactoe-cell ${cell ? 'taken' : ''} ${tttWinningLine.includes(i) ? 'winning' : ''}`}
+                    onClick={() => tttMove(i)}
+                    aria-label={cell || `Empty cell ${i + 1}`}
+                    disabled={!!cell || !!tttWinner}>
+                    {cell}
+                  </button>
+                ))}
+              </div>
+              <button className="tictactoe-reset" onClick={tttReset} type="button" aria-label="Reset game">🔄 New Game</button>
+            </div>
+          )}
+
+          {/* DRAWING PAD */}
+          {activeGame === 'drawing' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <h2>✏️ Drawing Pad</h2>
+                </div>
+              </div>
+              <div className="drawing-container">
+                <div className="drawing-canvas-wrapper">
+                  <canvas ref={canvasRef} className="drawing-canvas"
+                    onMouseDown={drawStart} onMouseMove={drawMove} onMouseUp={drawEnd} onMouseLeave={drawEnd}
+                    onTouchStart={drawStart} onTouchMove={drawMove} onTouchEnd={drawEnd}
+                    aria-label="Drawing canvas" />
+                </div>
+                <div className="drawing-tools">
+                  {drawColors.map((c) => (
+                    <button key={c} type="button"
+                      className={`drawing-color-btn ${drawColor === c ? 'active' : ''}`}
+                      style={{ background: c }}
+                      onClick={() => setDrawColor(c)}
+                      aria-label={`Color ${c}`} />
+                  ))}
+                </div>
+                <div className="drawing-tools">
+                  {drawSizes.map((s) => (
+                    <button key={s} type="button"
+                      className={`drawing-size-btn ${drawSize === s ? 'active' : ''}`}
+                      onClick={() => setDrawSize(s)}
+                      aria-label={`Brush size ${s}`}>
+                      {s}px
+                    </button>
+                  ))}
+                  <button className="drawing-action-btn undo" onClick={undoDrawing} type="button" aria-label="Undo last stroke">↩ Undo</button>
+                  <button className="drawing-action-btn clear" onClick={clearCanvas} type="button" aria-label="Clear canvas">🗑 Clear</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TYPING PRACTICE */}
+          {activeGame === 'typing' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <h2>⌨️ Quick Typing</h2>
+                </div>
+              </div>
+              <div className="typing-container">
+                <div className="typing-mode-toggle">
+                  <button type="button"
+                    className={`typing-mode-btn ${typingMode === 'letters' ? 'active' : ''}`}
+                    onClick={() => switchTypingMode('letters')}
+                    aria-label="Letter mode">Letters</button>
+                  <button type="button"
+                    className={`typing-mode-btn ${typingMode === 'words' ? 'active' : ''}`}
+                    onClick={() => switchTypingMode('words')}
+                    aria-label="Word mode">Words</button>
+                </div>
+                <div className="typing-display" aria-live="assertive">
+                  {typingTarget.split('').map((char, i) => (
+                    <span key={i} style={{
+                      color: i < typingInput.length
+                        ? typingInput[i] === char ? 'var(--teal)' : 'var(--coral)'
+                        : 'var(--navy)',
+                      opacity: i < typingInput.length ? 1 : 0.5,
+                    }}>{char}</span>
+                  ))}
+                </div>
+                <input type="text" className={`typing-input ${typingResult}`}
+                  value={typingInput}
+                  onChange={handleTypingInput}
+                  placeholder="Type here..."
+                  aria-label="Typing input"
+                  autoFocus
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false" />
+                <div className="typing-stats">
+                  <div className="typing-stat">
+                    <div className="typing-stat-value">{typingCorrect}</div>
+                    <div className="typing-stat-label">Correct</div>
+                  </div>
+                  <div className="typing-stat">
+                    <div className="typing-stat-value">{typingTotal}</div>
+                    <div className="typing-stat-label">Total</div>
+                  </div>
+                  <div className="typing-stat">
+                    <div className="typing-stat-value">{typingTotal > 0 ? Math.round((typingCorrect / typingTotal) * 100) : 0}%</div>
+                    <div className="typing-stat-label">Accuracy</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* FLASHCARDS */}
+          {activeGame === 'flashcards' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <h2>📇 Flash Cards</h2>
+                </div>
+              </div>
+              <div className="flashcards-container">
+                <div className="flashcard-category-tabs">
+                  {Object.keys(flashcardCategories).map((cat) => (
+                    <button key={cat} type="button"
+                      className={`flashcard-cat-btn ${flashcardCat === cat ? 'active' : ''}`}
+                      onClick={() => switchFlashcardCat(cat)}
+                      aria-label={`Category: ${cat}`}>
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+                {currentCard && (
+                  <div className={`flashcard ${flashcardFlipped ? 'flipped' : ''}`} onClick={toggleFlashcard} role="button" tabIndex={0} aria-label="Tap to flip card" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleFlashcard() }}>
+                    <div className="flashcard-inner">
+                      <div className="flashcard-front">
+                        <div className="flashcard-emoji">{currentCard.emoji}</div>
+                        <div className="flashcard-label">{flashcardCat}</div>
+                        <div className="flashcard-title">{currentCard.title}</div>
+                      </div>
+                      <div className="flashcard-back">
+                        <div className="flashcard-fact">{currentCard.fact}</div>
+                        <div className="flashcard-hint">👆 Tap to flip back</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <p className="flashcard-tap-hint">👆 Tap card to flip</p>
+                <div className="flashcard-nav">
+                  <button type="button" onClick={prevFlashcard} aria-label="Previous card">← Previous</button>
+                  <span className="flashcard-counter">{flashcardIdx + 1} / {currentCards.length}</span>
+                  <button type="button" onClick={nextFlashcard} aria-label="Next card">Next →</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ===== RENDER: GAME GRID =====
+  function renderGameGrid() {
+    const games = gamesByCategory[category]
+    return (
+      <section aria-label={`${categoryInfo[category].label} games`}>
+        <div className="section-header">
+          <h2><span className="section-emoji">{categoryInfo[category].icon}</span> {categoryInfo[category].label}</h2>
+        </div>
+        <div className="game-grid">
+          {games.map((key) => {
+            const info = allGames.find(g => g.key === key)!
+            const isNew = ['tictactoe', 'drawing', 'typing', 'flashcards'].includes(key)
+            return (
+              <button key={key} type="button"
+                className={`game-card ${isNew ? 'new-badge' : ''}`}
+                onClick={() => openGame(key)}
+                aria-label={`Play ${info.title}`}>
+                <span className="game-card-icon">{info.icon}</span>
+                <span className="game-card-title">{info.title}</span>
+                <span className="game-card-desc">{info.description}</span>
+                <span className="game-card-badge">{info.level}</span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+    )
+  }
+
+  // ===== MAIN RENDER =====
   return (
-    <main className={hasParentAgreement ? '' : 'locked'}>
+    <div className={hasParentAgreement ? 'app-container' : 'app-container locked'}>
+      {/* Parent Supervision Gate */}
       {!hasParentAgreement && (
         <section className="supervision-gate" aria-labelledby="supervision-title" role="dialog" aria-modal="true">
           <div className="supervision-card">
-            <img src="/aaron-playground/parent-supervision.jpg" alt="Aaron Playground welcome image" />
+            <img src="/aaron-playground/parent-supervision.jpg" alt="Aaron Playground welcome" />
             <div className="supervision-copy">
-              <p className="eyebrow">Before You Play</p>
+              <p className="eyebrow">👋 Before You Play</p>
               <h2 id="supervision-title">Parent supervision required</h2>
               <p>
                 Aaron Playground is made for kids. Please play with parent or guardian supervision.
@@ -570,12 +1264,9 @@ function App() {
               </p>
               {agreementMessage && <p className="agreement-warning" role="alert">{agreementMessage}</p>}
               <div className="agreement-actions">
-                <button type="button" onClick={() => setHasParentAgreement(true)}>I agree — let me play</button>
-                <button
-                  type="button"
-                  className="reject"
-                  onClick={() => setAgreementMessage('You need parent or guardian supervision to play Aaron Playground.')}
-                >
+                <button type="button" onClick={() => setHasParentAgreement(true)}>🎮 I agree — let me play!</button>
+                <button type="button" className="reject"
+                  onClick={() => setAgreementMessage('You need parent or guardian supervision to play Aaron Playground.')}>
                   I do not agree
                 </button>
               </div>
@@ -583,114 +1274,116 @@ function App() {
           </div>
         </section>
       )}
-      <section className="hero" aria-labelledby="page-title">
-        <div className="hero-copy">
-          <p className="eyebrow">Aaron Playground</p>
-          <h1 id="page-title">Choose a game. Start playing.</h1>
-          <p className="intro">A clean, mobile-friendly playground for learning games, puzzles, and arcade play.</p>
-          <a className="primary-action" href="#games">Browse games</a>
+
+      {/* Header */}
+      <header className="header">
+        <div className="header-logo">
+          <span className="header-logo-icon">🌈</span>
+          <h1>Aaron <span>Playground</span></h1>
         </div>
+        <div className="header-stats">
+          <span className="stat-badge stars" aria-label={`${starScore} stars earned`}>
+            <span className="stat-badge-icon">⭐</span> {starScore}
+          </span>
+          <span className="stat-badge streak" aria-label={`${dailyStreak} day streak`}>
+            <span className="stat-badge-icon">🔥</span> {dailyStreak}
+          </span>
+        </div>
+      </header>
+
+      {/* Fun Facts Carousel */}
+      <div className="fun-facts-bar">
+        <span className="fun-fact-text">{funFactsList[funFactIndex]}</span>
+        <div className="fun-fact-nav">
+          <button type="button" onClick={() => setFunFactIndex((funFactIndex - 1 + funFactsList.length) % funFactsList.length)} aria-label="Previous fun fact">‹</button>
+          <button type="button" onClick={() => setFunFactIndex((funFactIndex + 1) % funFactsList.length)} aria-label="Next fun fact">›</button>
+        </div>
+      </div>
+
+      {/* Daily Brain Challenge */}
+      <div className="daily-challenge" onClick={() => {
+        const dc = getDailyChallenge()
+        const targetMap: Record<string, GameKey> = {
+          'Math Blitz': 'math', 'Memory Master': 'memory', 'Science Explorer': 'science',
+          'Snake Champion': 'snake', 'Puzzle Solver': 'puzzles', 'Spelling Star': 'spelling',
+          'Riddle Master': 'riddles', 'Number Compare': 'bigger', 'Pattern Pro': 'patterns',
+          'Creative Creator': 'drawing',
+        }
+        const target = targetMap[dc.title] || 'math'
+        openGame(target)
+      }} role="button" tabIndex={0} aria-label="Daily Brain Challenge" onKeyDown={(e) => { if (e.key === 'Enter') { openGame('math') }}}>
+        <span className="daily-challenge-icon">{getDailyChallenge().emoji}</span>
+        <div className="daily-challenge-text">
+          <div className="daily-label">🌟 Daily Brain Challenge</div>
+          <div className="daily-title">{getDailyChallenge().title}</div>
+          <div className="daily-desc">{getDailyChallenge().desc}</div>
+        </div>
+        <span className="daily-challenge-arrow">→</span>
+      </div>
+
+      {/* Hero */}
+      <section className="hero" aria-labelledby="main-title">
+        <div className="hero-mascots">🚀🌈🎨🧠✨</div>
+        <h2 id="main-title">Welcome to <span>Aaron Playground</span>!</h2>
+        <p>Where learning meets fun! Explore games, study cool facts, create art, and challenge your brain. Every day is a new adventure! 🌟</p>
       </section>
 
-      <section className="game-library" id="games" aria-labelledby="game-library-title">
-        <div className="library-heading">
-          <div>
-            <p className="eyebrow">Game Library</p>
-            <h2 id="game-library-title">Games</h2>
-          </div>
-          <p>Tap any card to jump straight into play.</p>
-        </div>
+      {/* Category Tabs */}
+      <nav className="category-tabs" aria-label="Game categories">
+        {(Object.keys(categoryInfo) as Category[]).map((cat) => (
+          <button key={cat} type="button"
+            className={`category-tab ${category === cat ? 'active' : ''}`}
+            onClick={() => setCategory(cat)}
+            aria-label={`${categoryInfo[cat].label} games`}
+            aria-current={category === cat ? 'page' : undefined}>
+            <span className="tab-icon">{categoryInfo[cat].icon}</span>
+            <span className="tab-label">{categoryInfo[cat].label}</span>
+          </button>
+        ))}
+      </nav>
 
-        <div className="selected-game-strip" aria-live="polite">
-          <span className={`selected-icon icon-${currentInfo.art}`}>{currentInfo.icon}</span>
-          <div>
-            <strong>{currentInfo.title}</strong>
-            <span>{currentInfo.description}</span>
-          </div>
-          <div className="hub-actions">
-            <span className="star-pill">★ {starScore}</span>
-            <button type="button" onClick={() => playPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Play now</button>
+      {/* Status Message */}
+      <p className="status-message" role="status" aria-live="polite">{message}</p>
+
+      {/* Game Grid */}
+      {renderGameGrid()}
+
+      {/* Footer */}
+      <footer className="footer">
+        <span className="footer-emoji">🌟</span> Made with love for curious kids everywhere! <span className="footer-emoji">🌈</span>
+        <br />Keep playing, keep learning, keep shining! ⭐
+      </footer>
+
+      {/* Active Game Panel */}
+      {activeGame && renderActiveGame()}
+
+      {/* Milestone Popup */}
+      {showMilestone && (
+        <div className="milestone-popup" role="dialog" aria-modal="true" aria-label="Achievement milestone">
+          <div className="milestone-card">
+            <div className="milestone-icon">🏆</div>
+            <div className="milestone-title">🌟 Milestone Reached!</div>
+            <div className="milestone-desc">{showMilestone}</div>
+            <button className="milestone-close" onClick={() => setShowMilestone(null)} type="button" aria-label="Close milestone">🎉 Awesome!</button>
           </div>
         </div>
+      )}
 
-        <div className="game-picker" aria-label="Choose a game">
-          {gameInfo.map((game) => (
-            <button
-              key={game.key}
-              className={selectedGame === game.key ? 'game-tab active' : 'game-tab'}
-              onClick={() => chooseGame(game.key)}
-              type="button"
-            >
-              <span className={`game-icon icon-${game.art}`} aria-hidden="true">{game.icon}</span>
-              <span className="game-card-copy">
-                <strong>{game.title}</strong>
-                <span>{game.description}</span>
-              </span>
-              <span className="game-level">{game.level}</span>
-            </button>
+      {/* Confetti */}
+      {confetti.length > 0 && (
+        <div className="confetti-container" aria-hidden="true">
+          {confetti.map((piece) => (
+            <div key={piece.id} className="confetti-piece"
+              style={{
+                left: `${piece.x}%`,
+                background: piece.color,
+                animationDelay: `${Math.random() * 0.5}s`,
+                animationDuration: `${2 + Math.random() * 2}s`,
+              }} />
           ))}
         </div>
-      </section>
-
-      <p className="status" role="status">{message}</p>
-
-      <section className="play-panel" ref={playPanelRef}>
-        {selectedGame === 'snake' ? (
-          <article className={gameCardClass('snake', 'snake-fullscreen-ready')}>
-            <div className="snake-topbar game-card-topbar">
-              <div>
-                <p className="round-count">Score: {snakeScore}</p>
-                <h2>Rainbow Snake</h2>
-              </div>
-              {renderFullScreenButton('snake')}
-            </div>
-            <p className="snake-help">Swipe-style controls: collect gems, grow longer, avoid walls. Designed to feel like a mobile app.</p>
-            <div className="snake-game-shell">
-              <div className="snake-board" aria-label="Rainbow Snake game board">
-                {Array.from({ length: 225 }, (_, index) => {
-                  const isHead = snakeCells[0] === index
-                  const isBody = snakeCells.includes(index)
-                  const isGem = snakeGem === index
-                  return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? '💎' : ''}</span>
-                })}
-              </div>
-              <div className="snake-controls">
-                <button type="button" onClick={() => moveSnake(-15)} disabled={snakeDirection === 15}>↑</button>
-                <button type="button" onClick={() => moveSnake(-1)} disabled={snakeDirection === 1}>←</button>
-                <button type="button" onClick={() => moveSnake(1)} disabled={snakeDirection === -1}>→</button>
-                <button type="button" onClick={() => moveSnake(15)} disabled={snakeDirection === -15}>↓</button>
-              </div>
-            </div>
-          </article>
-        ) : selectedGame === 'bubbles' ? (
-          renderBubbleGame()
-        ) : selectedGame === 'puzzles' ? (
-          renderPuzzleGame()
-        ) : selectedGame === 'memory' ? (
-          <article className={gameCardClass('memory')}>
-            <div className="game-card-topbar">
-              <div>
-                <p className="round-count">Memory board {memoryBoardIndex + 1} of {memoryBoards.length}</p>
-                <h2>Memory Match</h2>
-              </div>
-              {renderFullScreenButton('memory')}
-            </div>
-            <div className="memory-grid">
-              {currentBoard.map((card, index) => {
-                const isVisible = flipped.includes(index) || matched.includes(`${index}`)
-                return (
-                  <button key={`${memoryBoardIndex}-${card}-${index}`} className="memory-card" onClick={() => flipCard(index)} type="button">
-                    {isVisible ? card : '?'}
-                  </button>
-                )
-              })}
-            </div>
-          </article>
-        ) : (
-          renderChoiceGame(selectedGame)
-        )}
-      </section>
-    </main>
+      )}
+    </div>
   )
 }
 
