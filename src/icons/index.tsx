@@ -22,6 +22,9 @@ const gameIcons: Record<string, { icon: string; bg: string; label: string }> = {
   typing:     { icon: 'mdi:keyboard', bg: '#AA96DA', label: 'Typing' },
   flashcards: { icon: 'mdi:card-text', bg: '#30D5C8', label: 'Flash Cards' },
   guesswho:   { icon: 'mdi:account-question', bg: '#FF9500', label: 'Guess Who' },
+  wordsearch: { icon: 'mdi:text-search', bg: '#4A90D9', label: 'Word Search' },
+  maze:       { icon: 'mdi:routes', bg: '#FF9500', label: 'Maze Runner' },
+  music:      { icon: 'mdi:music', bg: '#FF69B4', label: 'Music Tiles' },
   // Categories
   play:       { icon: 'mdi:gamepad-variant', bg: '#FF6B6B', label: 'Play' },
   study:      { icon: 'mdi:book-open-page-variant', bg: '#6BCB77', label: 'Study' },

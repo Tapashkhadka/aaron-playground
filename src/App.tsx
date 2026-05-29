@@ -7,8 +7,9 @@ type GameKey =
   | 'math' | 'science' | 'memory' | 'patterns' | 'spelling' | 'colors'
   | 'counting' | 'shapes' | 'animals' | 'bigger' | 'riddles' | 'puzzles'
   | 'snake' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards' | 'guesswho'
+  | 'wordsearch' | 'maze' | 'music'
 
-type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards' | 'guesswho'>
+type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards' | 'guesswho' | 'wordsearch' | 'maze' | 'music'>
 
 type ChoiceRound = {
   prompt: string
@@ -45,13 +46,16 @@ const allGames = [
   // Brain games
   { key: 'typing' as GameKey, title: 'Quick Typing', description: 'Type letters & words!', level: '6+' } as const,
   { key: 'guesswho' as GameKey, title: 'Guess Who?', description: 'Find the mystery character!', level: '4+' } as const,
+  { key: 'wordsearch' as GameKey, title: 'Word Search', description: 'Find hidden words!', level: '5+' } as const,
+  { key: 'maze' as GameKey, title: 'Maze Runner', description: 'Navigate the maze!', level: '4+' } as const,
+  { key: 'music' as GameKey, title: 'Music Tiles', description: 'Play musical notes!', level: '2+' } as const,
 ]
 
 const gamesByCategory: Record<Category, GameKey[]> = {
-  play: ['math', 'science', 'memory', 'snake', 'puzzles', 'bubbles', 'colors', 'shapes', 'animals', 'spelling', 'counting', 'patterns', 'riddles', 'bigger'],
+  play: ['math', 'science', 'memory', 'snake', 'puzzles', 'bubbles', 'colors', 'shapes', 'animals', 'spelling', 'counting', 'patterns', 'riddles', 'bigger', 'wordsearch'],
   study: ['flashcards'],
-  create: ['drawing'],
-  braingames: ['tictactoe', 'typing', 'guesswho'],
+  create: ['drawing', 'music'],
+  braingames: ['tictactoe', 'typing', 'guesswho', 'maze'],
 }
 
 const categoryInfo: Record<Category, { label: string; icon: string }> = {
@@ -387,7 +391,11 @@ function updateStreak(): number {
 }
 
 // ===== DRAWING COLORS =====
-const drawColors = ['#FF6B6B', '#FFD93D', '#6BCB77', '#AA96DA', '#2D3436', '#FF9500', '#30D5C8', '#FF69B4', '#4A90D9', '#000000']
+const drawColors = [
+  '#000000', '#FFFFFF', '#FF6B6B', '#FF9500', '#FFD93D', 
+  '#6BCB77', '#30D5C8', '#4A90D9', '#AA96DA', '#FF69B4',
+  '#8B4513', '#808080', '#FF4500', '#FFD700', '#00CED1',
+]
 const drawSizes = [3, 6, 10, 16]
 
 // ===== MAIN APP COMPONENT =====
@@ -451,6 +459,8 @@ function App() {
   // Drawing state
   const [drawColor, setDrawColor] = useState('#FF6B6B')
   const [drawSize, setDrawSize] = useState(6)
+  const [drawMode, setDrawMode] = useState<'draw' | 'erase' | 'stamp'>('draw')
+  const [stampType, setStampType] = useState<'star' | 'heart' | 'circle' | 'square'>('star')
   const [isDrawing, setIsDrawing] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const lastPosRef = useRef<{ x: number; y: number } | null>(null)
@@ -468,6 +478,23 @@ function App() {
   const [flashcardCat, setFlashcardCat] = useState('Animals')
   const [flashcardIdx, setFlashcardIdx] = useState(0)
   const [flashcardFlipped, setFlashcardFlipped] = useState(false)
+
+  // ===== WORD SEARCH STATE =====
+  const [wsGrid, setWsGrid] = useState<string[][]>([])
+  const [wsWords, setWsWords] = useState<string[]>([])
+  const [wsFound, setWsFound] = useState<string[]>([])
+  const [wsSelecting, setWsSelecting] = useState<{start: [number,number], cells:[number,number][]} | null>(null)
+  const [wsDifficulty, setWsDifficulty] = useState<'easy' | 'hard'>('easy')
+
+  // ===== MAZE RUNNER STATE =====
+  const [mazeGrid, setMazeGrid] = useState<number[][]>([])
+  const [mazeSize, setMazeSize] = useState(6)
+  const [mazePos, setMazePos] = useState({x:1,y:1})
+  const [mazeSolved, setMazeSolved] = useState(false)
+  const [mazeMoves, setMazeMoves] = useState(0)
+
+  // ===== MUSIC TILES STATE =====
+  const [musicRecording, setMusicRecording] = useState<{freq:number,time:number}[]>([])
 
   // Refs
   const panelRef = useRef<HTMLDivElement>(null)
@@ -862,6 +889,19 @@ function App() {
     // Capture pointer so we don't lose events if finger leaves canvas
     const canvas = canvasRef.current
     if (canvas) canvas.setPointerCapture(e.pointerId)
+
+    // Stamp mode: draw immediately at position
+    if (drawMode === 'stamp') {
+      const ctx = canvas?.getContext('2d')
+      if (ctx) {
+        drawStamp(ctx, pos.x, pos.y, stampType)
+        drawHistoryRef.current.push(ctx.getImageData(0, 0, canvas!.width, canvas!.height))
+        setIsDrawing(false)
+        lastPosRef.current = null
+        try { canvas!.releasePointerCapture(e.pointerId) } catch { /* ignore */ }
+      }
+      return
+    }
   }
 
   function drawMove(e: React.PointerEvent) {
@@ -872,8 +912,8 @@ function App() {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    ctx.strokeStyle = drawColor
-    ctx.lineWidth = drawSize
+    ctx.strokeStyle = drawMode === 'erase' ? '#FFFFFF' : drawColor
+    ctx.lineWidth = drawMode === 'erase' ? drawSize * 2 : drawSize
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     ctx.beginPath()
@@ -921,6 +961,54 @@ function App() {
     ctx.putImageData(drawHistoryRef.current[drawHistoryRef.current.length - 1], 0, 0)
     restoreCtxProps(ctx)
     setMessage('Undone!')
+  }
+
+  function drawStamp(ctx: CanvasRenderingContext2D, x: number, y: number, type: string) {
+    const size = drawSize * 4
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.fillStyle = drawColor
+    ctx.strokeStyle = drawColor
+    ctx.lineWidth = 2
+    const s = size / 2
+
+    if (type === 'star') {
+      // 5-pointed star
+      ctx.beginPath()
+      for (let i = 0; i < 5; i++) {
+        const outerAngle = (i * 72 - 90) * Math.PI / 180
+        const innerAngle = ((i * 72) + 36 - 90) * Math.PI / 180
+        if (i === 0) ctx.moveTo(s * Math.cos(outerAngle), s * Math.sin(outerAngle))
+        else ctx.lineTo(s * Math.cos(outerAngle), s * Math.sin(outerAngle))
+        ctx.lineTo(s * 0.4 * Math.cos(innerAngle), s * 0.4 * Math.sin(innerAngle))
+      }
+      ctx.closePath()
+      ctx.fill()
+    } else if (type === 'heart') {
+      ctx.beginPath()
+      ctx.moveTo(0, s * 0.3)
+      ctx.bezierCurveTo(-s, -s * 0.5, -s * 0.5, -s, 0, -s * 0.2)
+      ctx.bezierCurveTo(s * 0.5, -s, s, -s * 0.5, 0, s * 0.3)
+      ctx.fill()
+    } else if (type === 'circle') {
+      ctx.beginPath()
+      ctx.arc(0, 0, s * 0.7, 0, Math.PI * 2)
+      ctx.fill()
+    } else if (type === 'square') {
+      ctx.fillRect(-s * 0.7, -s * 0.7, s * 1.4, s * 1.4)
+    }
+    ctx.restore()
+  }
+
+  function saveDrawing() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const link = document.createElement('a')
+    link.download = 'my-drawing.png'
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+    setMessage('Drawing saved! 🌟')
+    addStars(1)
   }
 
   // ===== TYPING LOGIC =====
@@ -1118,6 +1206,269 @@ function App() {
     }
   }
 
+  // ===== WORD SEARCH LOGIC =====
+  const wsEasyWords = ['CAT', 'DOG', 'SUN', 'TREE', 'FISH', 'BIRD', 'STAR', 'MOON', 'BOOK', 'BALL', 'FROG', 'DUCK', 'BEAR', 'LION', 'HOME', 'CAKE', 'ROSE', 'SNOW', 'RAIN', 'HAPPY', 'SMILE', 'DREAM', 'CLOUD', 'RIVER', 'OCEAN', 'MAGIC']
+  const wsHardWords = ['PLANET', 'BRIDGE', 'CASTLE', 'FOREST', 'GARDEN', 'ISLAND', 'MONKEY', 'RABBIT', 'TURTLE', 'WINTER', 'SUMMER', 'SCHOOL', 'PENCIL', 'ROCKET', 'DRAGON', 'JUNGLE', 'PUZZLE', 'TIGER', 'EAGLE', 'FLOWER', 'MOUNTAIN', 'DOLPHIN', 'BUTTERFLY', 'KINGDOM']
+
+  function wsNewPuzzle(diff: 'easy' | 'hard') {
+    setWsDifficulty(diff)
+    const wordList = diff === 'easy' ? wsEasyWords : wsHardWords
+    const gridSize = diff === 'easy' ? 8 : 10
+    const wordCount = diff === 'easy' ? 4 : 6
+    const grid: string[][] = Array.from({length: gridSize}, () => Array(gridSize).fill(''))
+    const placed: string[] = []
+
+    // Pick random words
+    const available = [...wordList]
+    for (let i = available.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [available[i], available[j]] = [available[j], available[i]] }
+    const selected = available.slice(0, wordCount)
+
+    // Try to place each word
+    for (const word of selected) {
+      let placed_ok = false
+      for (let attempt = 0; attempt < 100 && !placed_ok; attempt++) {
+        const dirs = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]]
+        const [dr, dc] = dirs[Math.floor(Math.random() * dirs.length)]
+        const r = Math.floor(Math.random() * gridSize)
+        const c = Math.floor(Math.random() * gridSize)
+        const er = r + dr * (word.length - 1)
+        const ec = c + dc * (word.length - 1)
+        if (er < 0 || er >= gridSize || ec < 0 || ec >= gridSize) continue
+        let canPlace = true
+        for (let k = 0; k < word.length; k++) {
+          const cell = grid[r + dr * k][c + dc * k]
+          if (cell !== '' && cell !== word[k]) { canPlace = false; break }
+        }
+        if (canPlace) {
+          for (let k = 0; k < word.length; k++) {
+            grid[r + dr * k][c + dc * k] = word[k]
+          }
+          placed_ok = true
+        }
+      }
+      if (placed_ok) placed.push(word)
+    }
+
+    // Fill empty cells with random letters
+    for (let r = 0; r < gridSize; r++) {
+      for (let c = 0; c < gridSize; c++) {
+        if (grid[r][c] === '') {
+          grid[r][c] = String.fromCharCode(65 + Math.floor(Math.random() * 26))
+        }
+      }
+    }
+
+    setWsGrid(grid)
+    setWsWords(placed)
+    setWsFound([])
+    setWsSelecting(null)
+    setMessage(`Find ${placed.length} hidden words in the grid!`)
+  }
+
+  function wsStartSelect(r: number, c: number) {
+    setWsSelecting({ start: [r, c], cells: [[r, c]] })
+  }
+
+  function wsMoveSelect(r: number, c: number) {
+    setWsSelecting((prev) => {
+      if (!prev) return null
+      const [sr, sc] = prev.start
+      const dr = Math.sign(r - sr)
+      const dc = Math.sign(c - sc)
+      if (dr === 0 && dc === 0) return { start: prev.start, cells: [[sr, sc]] }
+      // Only allow straight lines (same row, same col, or same diagonal delta)
+      if (dr !== 0 && dc !== 0 && Math.abs(r - sr) !== Math.abs(c - sc)) return prev
+      const cells: [number, number][] = []
+      let cr = sr, cc = sc
+      while (true) {
+        cells.push([cr, cc])
+        if (cr === r && cc === c) break
+        cr += dr
+        cc += dc
+      }
+      return { start: prev.start, cells }
+    })
+  }
+
+  function wsEndSelect() {
+    if (!wsSelecting) return
+    const selectedWord = wsSelecting.cells.map(([r, c]) => wsGrid[r]?.[c] || '').join('')
+    // Check forward and backward
+    const forwardMatch = wsWords.find(w => !wsFound.includes(w) && w === selectedWord)
+    const backwardMatch = wsWords.find(w => !wsFound.includes(w) && w === selectedWord.split('').reverse().join(''))
+    if (forwardMatch) {
+      setWsFound([...wsFound, forwardMatch])
+      setMessage(`Found: ${forwardMatch}!`)
+      if (wsFound.length + 1 === wsWords.length) {
+        addStars(3)
+        setMessage('All words found! Amazing!')
+      }
+    } else if (backwardMatch) {
+      setWsFound([...wsFound, backwardMatch])
+      setMessage(`Found: ${backwardMatch}!`)
+      if (wsFound.length + 1 === wsWords.length) {
+        addStars(3)
+        setMessage('All words found! Amazing!')
+      }
+    }
+    setWsSelecting(null)
+  }
+
+  function wsIsCellFound(r: number, c: number): boolean {
+    // Check if any found word contains this cell
+    const gridSize = wsGrid.length
+    for (const word of wsFound) {
+      const dirs = [[0,1],[1,0],[1,1]]
+      for (const [dr, dc] of dirs) {
+        for (let sr = 0; sr < gridSize; sr++) {
+          for (let sc = 0; sc < gridSize; sc++) {
+            const er = sr + dr * (word.length - 1)
+            const ec = sc + dc * (word.length - 1)
+            if (er < 0 || er >= gridSize || ec < 0 || ec >= gridSize) continue
+            let match = true
+            for (let k = 0; k < word.length; k++) {
+              if (wsGrid[sr + dr * k]?.[sc + dc * k] !== word[k]) { match = false; break }
+            }
+            if (match) {
+              for (let k = 0; k < word.length; k++) {
+                if (sr + dr * k === r && sc + dc * k === c) return true
+              }
+            }
+          }
+        }
+      }
+    }
+    return false
+  }
+
+  // ===== MAZE RUNNER LOGIC =====
+  function generateMaze(size: number): number[][] {
+    const gridSize = size * 2 + 1
+    const grid: number[][] = Array.from({length: gridSize}, () => Array(gridSize).fill(0))
+    const visited: boolean[][] = Array.from({length: size}, () => Array(size).fill(false))
+
+    function carve(x: number, y: number) {
+      visited[y][x] = true
+      grid[y * 2 + 1][x * 2 + 1] = 1
+      const dirs: [number,number][] = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+      for (let i = dirs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [dirs[i], dirs[j]] = [dirs[j], dirs[i]] }
+      for (const [dx, dy] of dirs) {
+        const nx = x + dx, ny = y + dy
+        if (nx >= 0 && nx < size && ny >= 0 && ny < size && !visited[ny][nx]) {
+          grid[y * 2 + 1 + dy][x * 2 + 1 + dx] = 1
+          carve(nx, ny)
+        }
+      }
+    }
+    carve(0, 0)
+    grid[1][1] = 2 // player start
+    grid[gridSize - 2][gridSize - 2] = 3 // exit
+    return grid
+  }
+
+  function mazeInit(size: number) {
+    setMazeSize(size)
+    const g = generateMaze(size)
+    setMazeGrid(g)
+    setMazePos({x: 1, y: 1})
+    setMazeSolved(false)
+    setMazeMoves(0)
+    setMessage('Use arrow keys or buttons to reach the green exit!')
+  }
+
+  function mazeMove(dx: number, dy: number) {
+    if (mazeSolved) return
+    const nx = mazePos.x + dx
+    const ny = mazePos.y + dy
+    const gridSize = mazeGrid.length
+    if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) return
+    if (mazeGrid[ny][nx] === 0) return // wall
+    setMazePos({x: nx, y: ny})
+    setMazeMoves((m) => m + 1)
+    if (mazeGrid[ny][nx] === 3) {
+      setMazeSolved(true)
+      addStars(5)
+      setMessage(`Maze solved in ${mazeMoves + 1} moves! Amazing!`)
+    }
+  }
+
+  // Maze keyboard controls
+  useEffect(() => {
+    if (activeGame !== 'maze') return
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); mazeMove(0, -1) }
+      else if (e.key === 'ArrowDown' || e.key === 's') { e.preventDefault(); mazeMove(0, 1) }
+      else if (e.key === 'ArrowLeft' || e.key === 'a') { e.preventDefault(); mazeMove(-1, 0) }
+      else if (e.key === 'ArrowRight' || e.key === 'd') { e.preventDefault(); mazeMove(1, 0) }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeGame, mazePos, mazeSolved])
+
+  // ===== MUSIC TILES LOGIC =====
+  const musicNotes = [
+    { freq: 261.63, color: '#FF6B6B', label: 'C' },
+    { freq: 293.66, color: '#FF9500', label: 'D' },
+    { freq: 329.63, color: '#FFD93D', label: 'E' },
+    { freq: 349.23, color: '#6BCB77', label: 'F' },
+    { freq: 392.00, color: '#30D5C8', label: 'G' },
+    { freq: 440.00, color: '#4A90D9', label: 'A' },
+    { freq: 493.88, color: '#AA96DA', label: 'B' },
+    { freq: 523.25, color: '#FF69B4', label: 'C' },
+  ]
+
+  const twinkleNotes = [
+    { freq: 261.63, dur: 0.4 }, { freq: 261.63, dur: 0.4 },
+    { freq: 392.00, dur: 0.4 }, { freq: 392.00, dur: 0.4 },
+    { freq: 440.00, dur: 0.4 }, { freq: 440.00, dur: 0.4 },
+    { freq: 392.00, dur: 0.8 },
+    { freq: 349.23, dur: 0.4 }, { freq: 349.23, dur: 0.4 },
+    { freq: 329.63, dur: 0.4 }, { freq: 329.63, dur: 0.4 },
+    { freq: 293.66, dur: 0.4 }, { freq: 293.66, dur: 0.4 },
+    { freq: 261.63, dur: 0.8 },
+  ]
+
+  function playNote(freq: number) {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
+      const ctx = new AudioCtx()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0.3, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.5)
+      setTimeout(() => ctx.close(), 600)
+    } catch { /* audio not available */ }
+  }
+
+  function musicTapNote(freq: number) {
+    playNote(freq)
+    setMusicRecording((prev) => [...prev, { freq, time: Date.now() }])
+  }
+
+  function musicPlaySong() {
+    let t = 0
+    for (const note of twinkleNotes) {
+      setTimeout(() => playNote(note.freq), t * 1000)
+      t += note.dur
+    }
+  }
+
+  function musicReplayRecording() {
+    if (musicRecording.length === 0) return
+    const startTime = musicRecording[0].time
+    for (const { freq, time } of musicRecording) {
+      const delay = (time - startTime) / 1000
+      setTimeout(() => playNote(freq), Math.max(0, delay * 1000))
+    }
+  }
+
   // ===== GAME NAVIGATION =====
   function openGame(game: GameKey) {
     setActiveGame(game)
@@ -1133,6 +1484,15 @@ function App() {
       setGwMode('1p')
       gwInit('1p')
       setMessage('vs Bot — the bot picked a character! Ask yes/no questions!')
+    }
+    if (game === 'wordsearch') {
+      wsNewPuzzle('easy')
+    }
+    if (game === 'maze') {
+      mazeInit(6)
+    }
+    if (game === 'music') {
+      setMusicRecording([])
     }
   }
 
@@ -1361,36 +1721,74 @@ function App() {
           {activeGame === 'drawing' && (
             <div className="challenge-card">
               <div className="game-card-topbar">
-                <div>
-                  <h2><GameIcon name="drawing" size={20} /> Drawing Pad</h2>
-                </div>
+                <div><h2><GameIcon name="drawing" size={20} /> Drawing Pad</h2></div>
               </div>
               <div className="drawing-container">
+                {/* Mode Selector */}
+                <div className="drawing-modes">
+                  <button className={`drawing-mode-btn ${drawMode === 'draw' ? 'active' : ''}`} 
+                    onClick={() => setDrawMode('draw')} aria-label="Draw mode">
+                    <IconifyIcon name="mdi:brush" size={18} /> Draw
+                  </button>
+                  <button className={`drawing-mode-btn ${drawMode === 'erase' ? 'active' : ''}`} 
+                    onClick={() => setDrawMode('erase')} aria-label="Eraser">
+                    <IconifyIcon name="mdi:eraser" size={18} /> Erase
+                  </button>
+                  <button className={`drawing-mode-btn ${drawMode === 'stamp' ? 'active' : ''}`} 
+                    onClick={() => setDrawMode('stamp')} aria-label="Stamp mode">
+                    <IconifyIcon name="mdi:star" size={18} /> Stamp
+                  </button>
+                </div>
+                
+                {/* Stamp selector (only visible in stamp mode) */}
+                {drawMode === 'stamp' && (
+                  <div className="drawing-stamps">
+                    {(['star', 'heart', 'circle', 'square'] as const).map(t => (
+                      <button key={t} className={`stamp-btn ${stampType === t ? 'active' : ''}`}
+                        onClick={() => setStampType(t)} aria-label={`${t} stamp`}>
+                        <IconifyIcon name={`mdi:${t}`} size={22} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
                 <div className="drawing-canvas-wrapper">
                   <canvas ref={canvasRef} className="drawing-canvas"
-                    onPointerDown={drawStart} onPointerMove={drawMove} onPointerUp={drawEnd} onPointerLeave={drawEnd}
+                    onPointerDown={drawStart} onPointerMove={drawMove} 
+                    onPointerUp={drawEnd} onPointerLeave={drawEnd}
                     aria-label="Drawing canvas" />
                 </div>
-                <div className="drawing-tools">
-                  {drawColors.map((c) => (
+                
+                {/* Color palette */}
+                <div className="drawing-colors">
+                  {drawColors.map(c => (
                     <button key={c} type="button"
                       className={`drawing-color-btn ${drawColor === c ? 'active' : ''}`}
                       style={{ background: c }}
-                      onClick={() => setDrawColor(c)}
+                      onClick={() => { setDrawColor(c); setDrawMode('draw') }}
                       aria-label={`Color ${c}`} />
                   ))}
                 </div>
-                <div className="drawing-tools">
-                  {drawSizes.map((s) => (
+                
+                {/* Brush sizes */}
+                <div className="drawing-tools-row">
+                  {drawSizes.map(s => (
                     <button key={s} type="button"
                       className={`drawing-size-btn ${drawSize === s ? 'active' : ''}`}
                       onClick={() => setDrawSize(s)}
-                      aria-label={`Brush size ${s}`}>
-                      {s}px
+                      aria-label={`Brush size ${s}px`}>
+                      <span className="size-dot" style={{ width: s, height: s }}></span>
                     </button>
                   ))}
-                  <button className="drawing-action-btn undo" onClick={undoDrawing} type="button" aria-label="Undo last stroke">↩ Undo</button>
-                  <button className="drawing-action-btn clear" onClick={clearCanvas} type="button" aria-label="Clear canvas">Clear</button>
+                  <button className="drawing-action-btn undo" onClick={undoDrawing} type="button" aria-label="Undo">
+                    <IconifyIcon name="mdi:undo" size={16} /> Undo
+                  </button>
+                  <button className="drawing-action-btn clear" onClick={clearCanvas} type="button" aria-label="Clear">
+                    <IconifyIcon name="mdi:delete" size={16} /> Clear
+                  </button>
+                  <button className="drawing-action-btn save" onClick={saveDrawing} type="button" aria-label="Save drawing">
+                    <IconifyIcon name="mdi:download" size={16} /> Save
+                  </button>
                 </div>
               </div>
             </div>
@@ -1596,6 +1994,103 @@ function App() {
                   )}
                 </>
               )}
+            </div>
+          )}
+
+          {/* WORD SEARCH */}
+          {activeGame === 'wordsearch' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <h2><GameIcon name="wordsearch" size={20} /> Word Search</h2>
+                  <p className="round-count">Found: {wsFound.length}/{wsWords.length}</p>
+                </div>
+              </div>
+              <div className="ws-difficulty">
+                <button className={`ws-diff-btn ${wsDifficulty==='easy'?'active':''}`} onClick={()=>wsNewPuzzle('easy')}>Easy</button>
+                <button className={`ws-diff-btn ${wsDifficulty==='hard'?'active':''}`} onClick={()=>wsNewPuzzle('hard')}>Hard</button>
+              </div>
+              <div className="ws-grid" style={{gridTemplateColumns:`repeat(${wsGrid[0]?.length||8},1fr)`}}>
+                {wsGrid.map((row,r)=>row.map((letter,c)=>{
+                  const isSelected = wsSelecting?.cells.some(([sr,sc])=>sr===r&&sc===c)
+                  const isFound = wsIsCellFound(r, c)
+                  return <button key={`${r}-${c}`} className={`ws-cell ${isSelected?'selected':''} ${isFound?'found':''}`}
+                    onPointerDown={(e)=>{e.preventDefault(); wsStartSelect(r,c)}}
+                    onPointerEnter={()=>wsMoveSelect(r,c)}
+                    onPointerUp={wsEndSelect}
+                    aria-label={`Letter ${letter}`}>{letter}</button>
+                }))}
+              </div>
+              <div className="ws-word-bank">
+                {wsWords.map(w=><span key={w} className={`ws-word ${wsFound.includes(w)?'found':''}`}>{w}</span>)}
+              </div>
+              <button className="ws-new-btn" onClick={()=>wsNewPuzzle(wsDifficulty)}>New Puzzle</button>
+            </div>
+          )}
+
+          {/* MAZE RUNNER */}
+          {activeGame === 'maze' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <h2><GameIcon name="maze" size={20} /> Maze Runner</h2>
+                  <p className="round-count">Moves: {mazeMoves}{mazeSolved ? ' ✓ Solved!' : ''}</p>
+                </div>
+              </div>
+              <div className="maze-difficulty">
+                {[6,8,10,12].map(sz=>(
+                  <button key={sz} className={`maze-size-btn ${mazeSize===sz?'active':''}`} onClick={()=>mazeInit(sz)}>{sz}x{sz}</button>
+                ))}
+              </div>
+              <div className="maze-grid" style={{gridTemplateColumns:`repeat(${mazeGrid[0]?.length||13},1fr)`}}>
+                {mazeGrid.map((row,r)=>row.map((cell,c)=>{
+                  const isPlayer = r === mazePos.y && c === mazePos.x
+                  return <div key={`${r}-${c}`} className={`maze-cell ${cell===0?'wall':'path'} ${isPlayer?'player':''} ${cell===3?'exit':''}`}>
+                    {isPlayer && <span className="maze-player">😊</span>}
+                    {cell===3 && !isPlayer && <span className="maze-exit-flag">🏁</span>}
+                  </div>
+                }))}
+              </div>
+              <div className="maze-controls">
+                <button onClick={()=>mazeMove(0,-1)} aria-label="Move up">↑</button>
+                <button onClick={()=>mazeMove(-1,0)} aria-label="Move left">←</button>
+                <button onClick={()=>mazeMove(1,0)} aria-label="Move right">→</button>
+                <button onClick={()=>mazeMove(0,1)} aria-label="Move down">↓</button>
+              </div>
+              {mazeSolved && (
+                <button className="maze-new-btn" onClick={()=>mazeInit(mazeSize+2 <= 12 ? mazeSize+2 : 6)}>Next Maze</button>
+              )}
+            </div>
+          )}
+
+          {/* MUSIC TILES */}
+          {activeGame === 'music' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <h2><GameIcon name="music" size={20} /> Music Tiles</h2>
+                  <p className="round-count">Tap tiles to play notes!</p>
+                </div>
+              </div>
+              <div className="music-tiles">
+                {musicNotes.map((note)=>(
+                  <button key={note.label} className="music-tile"
+                    style={{background: note.color}}
+                    onClick={()=>musicTapNote(note.freq)}
+                    aria-label={`Play note ${note.label}`}>
+                    <span className="music-tile-label">{note.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="music-actions">
+                <button className="music-action-btn" onClick={musicPlaySong}>🎵 Play Twinkle Twinkle</button>
+                <button className="music-action-btn" onClick={musicReplayRecording} disabled={musicRecording.length===0}>
+                  🔁 Replay ({musicRecording.length} notes)
+                </button>
+                <button className="music-action-btn" onClick={()=>setMusicRecording([])} disabled={musicRecording.length===0}>
+                  🗑️ Clear Recording
+                </button>
+              </div>
             </div>
           )}
         </div>
