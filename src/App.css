@@ -1683,3 +1683,90 @@
   .flashcard-front,
   .flashcard-back { padding: 16px; }
 }
+
+/* ===== GUESS WHO? ===== */
+.gw-instruction {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--navy);
+  margin: 8px 0 14px;
+  font-weight: 600;
+}
+.gw-correct {
+  color: var(--teal);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+.gw-character-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.gw-char {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px 6px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(0,0,0,0.06);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.gw-char:hover:not(:disabled) { transform: scale(1.05); border-color: var(--coral); }
+.gw-char.eliminated { opacity: 0.35; filter: grayscale(1); pointer-events: none; }
+.gw-char.wrong { border-color: var(--coral); animation: shake 0.3s; }
+.gw-char.revealed { border-color: var(--teal); background: rgba(107,203,119,0.1); }
+.gw-char-svg { width: 64px; height: 72px; display: block; }
+.gw-char-label { font-size: 0.7rem; font-weight: 700; color: var(--navy); }
+.gw-char-x {
+  position: absolute; top: 2px; right: 4px;
+  font-size: 0.8rem; color: var(--coral); font-weight: 900;
+}
+.gw-char-check {
+  position: absolute; top: 2px; right: 4px;
+  font-size: 1rem; color: var(--teal); font-weight: 900;
+}
+.gw-traits { margin-top: 16px; }
+.gw-trait-title { font-size: 0.85rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; text-align: center; }
+.gw-trait-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.gw-trait-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-round);
+  border: 2px solid rgba(0,0,0,0.08);
+  background: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.gw-trait-btn:hover:not(:disabled) { background: var(--lavender); color: white; border-color: var(--lavender); }
+.gw-trait-btn.asked { opacity: 0.4; pointer-events: none; }
+.gw-play-again {
+  display: block;
+  margin: 16px auto 0;
+  padding: 12px 28px;
+  border-radius: var(--radius-round);
+  background: linear-gradient(135deg, var(--teal), #5ab866);
+  color: white;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}

@@ -6,9 +6,9 @@ import { Icon, EmojiIcon } from './icons'
 type GameKey =
   | 'math' | 'science' | 'memory' | 'patterns' | 'spelling' | 'colors'
   | 'counting' | 'shapes' | 'animals' | 'bigger' | 'riddles' | 'puzzles'
-  | 'snake' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards'
+  | 'snake' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards' | 'guesswho'
 
-type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards'>
+type ChoiceGameKey = Exclude<GameKey, 'memory' | 'snake' | 'puzzles' | 'bubbles' | 'tictactoe' | 'drawing' | 'typing' | 'flashcards' | 'guesswho'>
 
 type ChoiceRound = {
   prompt: string
@@ -44,13 +44,14 @@ const allGames = [
   { key: 'drawing' as GameKey, title: 'Drawing Pad', description: 'Draw anything!', icon: '✏️', level: '2+' } as const,
   // Brain games
   { key: 'typing' as GameKey, title: 'Quick Typing', description: 'Type letters & words!', icon: '⌨️', level: '6+' } as const,
+  { key: 'guesswho' as GameKey, title: 'Guess Who?', description: 'Find the mystery character!', icon: '🎯', level: '4+' } as const,
 ]
 
 const gamesByCategory: Record<Category, GameKey[]> = {
   play: ['math', 'science', 'memory', 'snake', 'puzzles', 'bubbles', 'colors', 'shapes', 'animals', 'spelling', 'counting', 'patterns', 'riddles', 'bigger'],
   study: ['flashcards'],
   create: ['drawing'],
-  braingames: ['tictactoe', 'typing'],
+  braingames: ['tictactoe', 'typing', 'guesswho'],
 }
 
 const categoryInfo: Record<Category, { label: string; icon: string }> = {
@@ -996,6 +997,90 @@ function App() {
     setFlashcardFlipped(false)
   }
 
+  // ===== GUESS WHO? DATA =====
+  const guessWhoChars = [
+    { id: 0, color: '#FF6B6B', shape: 'circle', star: true, crown: false, hat: false, label: 'Ruby' },
+    { id: 1, color: '#4A90D9', shape: 'circle', star: false, crown: true, hat: false, label: 'Sky' },
+    { id: 2, color: '#6BCB77', shape: 'square', star: true, crown: false, hat: true, label: 'Clover' },
+    { id: 3, color: '#FFD93D', shape: 'square', star: false, crown: false, hat: false, label: 'Sunny' },
+    { id: 4, color: '#AA96DA', shape: 'triangle', star: false, crown: true, hat: true, label: 'Violet' },
+    { id: 5, color: '#FF9500', shape: 'triangle', star: true, crown: false, hat: false, label: 'Blaze' },
+    { id: 6, color: '#FF6B6B', shape: 'square', star: false, crown: true, hat: false, label: 'Cherry' },
+    { id: 7, color: '#4A90D9', shape: 'triangle', star: true, crown: true, hat: true, label: 'Sapphire' },
+    { id: 8, color: '#6BCB77', shape: 'circle', star: false, crown: false, hat: true, label: 'Mint' },
+  ]
+
+  const guessWhoTraits = [
+    { key: 'red', label: 'Red', filter: (c: typeof guessWhoChars[0]) => c.color === '#FF6B6B' },
+    { key: 'blue', label: 'Blue', filter: (c: typeof guessWhoChars[0]) => c.color === '#4A90D9' },
+    { key: 'green', label: 'Green', filter: (c: typeof guessWhoChars[0]) => c.color === '#6BCB77' },
+    { key: 'yellow', label: 'Yellow', filter: (c: typeof guessWhoChars[0]) => c.color === '#FFD93D' },
+    { key: 'purple', label: 'Purple', filter: (c: typeof guessWhoChars[0]) => c.color === '#AA96DA' },
+    { key: 'orange', label: 'Orange', filter: (c: typeof guessWhoChars[0]) => c.color === '#FF9500' },
+    { key: 'star', label: 'Has a Star', filter: (c: typeof guessWhoChars[0]) => c.star },
+    { key: 'crown', label: 'Has a Crown', filter: (c: typeof guessWhoChars[0]) => c.crown },
+    { key: 'hat', label: 'Has a Hat', filter: (c: typeof guessWhoChars[0]) => c.hat },
+    { key: 'circle', label: 'Circle', filter: (c: typeof guessWhoChars[0]) => c.shape === 'circle' },
+    { key: 'square', label: 'Square', filter: (c: typeof guessWhoChars[0]) => c.shape === 'square' },
+    { key: 'triangle', label: 'Triangle', filter: (c: typeof guessWhoChars[0]) => c.shape === 'triangle' },
+  ]
+
+  // Guess Who state
+  const [gwMystery, setGwMystery] = useState<number>(0)
+  const [gwAsked, setGwAsked] = useState<string[]>([])
+  const [gwEliminated, setGwEliminated] = useState<Set<number>>(new Set())
+  const [gwPhase, setGwPhase] = useState<'ask' | 'right' | 'wrong'>('ask')
+  const [gwGuessId, setGwGuessId] = useState<number | null>(null)
+  const gwInitDone = useRef(false)
+
+  function gwInit() {
+    const pick = Math.floor(Math.random() * guessWhoChars.length)
+    setGwMystery(pick)
+    setGwAsked([])
+    setGwEliminated(new Set())
+    setGwPhase('ask')
+    setGwGuessId(null)
+    gwInitDone.current = true
+  }
+
+  function gwAskTrait(traitKey: string) {
+    if (gwPhase !== 'ask' || gwAsked.includes(traitKey)) return
+    const trait = guessWhoTraits.find(t => t.key === traitKey)
+    if (!trait) return
+    const matches = trait.filter(guessWhoChars[gwMystery])
+    const eliminated = new Set(gwEliminated)
+    for (const ch of guessWhoChars) {
+      if (ch.id !== gwMystery && !eliminated.has(ch.id)) {
+        if (trait.filter(ch) !== matches) {
+          eliminated.add(ch.id)
+        }
+      }
+    }
+    setGwEliminated(eliminated)
+    setGwAsked([...gwAsked, traitKey])
+
+    const remaining = guessWhoChars.filter(c => !eliminated.has(c.id))
+    if (remaining.length === 1 && remaining[0].id === gwMystery) {
+      setGwPhase('right')
+      addStars(3)
+      setMessage('You found the mystery character! Amazing detective work!')
+    }
+  }
+
+  function gwGuess(charId: number) {
+    if (gwPhase !== 'ask') return
+    setGwGuessId(charId)
+    if (charId === gwMystery) {
+      setGwPhase('right')
+      addStars(3)
+      setMessage('Correct! You guessed the mystery character!')
+    } else {
+      setGwPhase('wrong')
+      setMessage('Not quite! Keep asking questions!')
+      setTimeout(() => { setGwPhase('ask'); setGwGuessId(null) }, 1500)
+    }
+  }
+
   // ===== GAME NAVIGATION =====
   function openGame(game: GameKey) {
     setActiveGame(game)
@@ -1006,6 +1091,10 @@ function App() {
     }
     if (game === 'typing') {
       pickTypingTarget(typingMode)
+    }
+    if (game === 'guesswho') {
+      gwInit()
+      setMessage('Who is the mystery character? Ask yes/no questions!')
     }
   }
 
@@ -1226,7 +1315,7 @@ function App() {
                   </button>
                 ))}
               </div>
-              <button className="tictactoe-reset" onClick={tttReset} type="button" aria-label="Reset game">🔄 New Game</button>
+              <button className="tictactoe-reset" onClick={tttReset} type="button" aria-label="Reset game"><Icon name="🔄" size={18} /> New Game</button>
             </div>
           )}
 
@@ -1355,18 +1444,84 @@ function App() {
                       </div>
                       <div className="flashcard-back">
                         <div className="flashcard-fact">{currentCard.fact}</div>
-                        <div className="flashcard-hint">👆 Tap to flip back</div>
+                        <div className="flashcard-hint"><Icon name="👆" size={16} /> Tap to flip back</div>
                       </div>
                     </div>
                   </div>
                 )}
-                <p className="flashcard-tap-hint">👆 Tap card to flip</p>
+                <p className="flashcard-tap-hint"><Icon name="👆" size={16} /> Tap card to flip</p>
                 <div className="flashcard-nav">
                   <button type="button" onClick={prevFlashcard} aria-label="Previous card">← Previous</button>
                   <span className="flashcard-counter">{flashcardIdx + 1} / {currentCards.length}</span>
                   <button type="button" onClick={nextFlashcard} aria-label="Next card">Next →</button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* GUESS WHO? */}
+          {activeGame === 'guesswho' && (
+            <div className="challenge-card">
+              <div className="game-card-topbar">
+                <div>
+                  <h2>Guess Who?</h2>
+                </div>
+              </div>
+              <p className="gw-instruction">
+                {gwPhase === 'right'
+                  ? <span className="gw-correct">You found the mystery character!</span>
+                  : 'Ask yes/no questions or click a character to guess!'}
+              </p>
+              <div className="gw-character-grid">
+                {guessWhoChars.map((ch) => {
+                  const eliminated = gwPhase !== 'right' && gwEliminated.has(ch.id)
+                  const isGuess = gwGuessId === ch.id
+                  const isMystery = gwPhase === 'right' && ch.id === gwMystery
+                  return (
+                    <button key={ch.id} type="button"
+                      className={`gw-char ${eliminated ? 'eliminated' : ''} ${isGuess ? (gwPhase === 'wrong' ? 'wrong' : '') : ''} ${isMystery ? 'revealed' : ''}`}
+                      onClick={() => gwGuess(ch.id)}
+                      disabled={gwPhase === 'right' || gwPhase === 'wrong'}
+                      aria-label={`Character ${ch.label}`}>
+                      <svg viewBox="0 0 120 140" className="gw-char-svg">
+                        {/* Body/base */}
+                        {ch.shape === 'circle' && <circle cx="60" cy="60" r="38" fill={eliminated ? '#ddd' : ch.color} />}
+                        {ch.shape === 'square' && <rect x="22" y="22" width="76" height="76" rx="10" fill={eliminated ? '#ddd' : ch.color} />}
+                        {ch.shape === 'triangle' && <polygon points="60,18 105,95 15,95" fill={eliminated ? '#ddd' : ch.color} />}
+                        {/* Accessories */}
+                        {ch.crown && <polygon points="35,22 45,8 60,18 75,8 85,22" fill={eliminated ? '#999' : '#FFD93D'} stroke={eliminated ? '#999' : '#E6B800'} strokeWidth="1" />}
+                        {ch.star && <polygon points="60,48 63,42 66,48 72,48 68,53 70,60 65,56 60,60 55,56 50,60 52,53 48,48 54,48" fill={eliminated ? '#999' : '#FFD93D'} />}
+                        {ch.hat && <rect x="38" y="8" width="44" height="14" rx="2" fill={eliminated ? '#999' : '#AA96DA'} />}
+                        {/* Eyes */}
+                        <circle cx={ch.shape === 'triangle' ? 47 : 48} cy={ch.shape === 'triangle' ? 55 : 54} r="4" fill={eliminated ? '#999' : '#2D3436'} />
+                        <circle cx={ch.shape === 'triangle' ? 73 : 72} cy={ch.shape === 'triangle' ? 55 : 54} r="4" fill={eliminated ? '#999' : '#2D3436'} />
+                        {/* Mouth */}
+                        <path d={`M${ch.shape === 'triangle' ? 52 : 50} ${ch.shape === 'triangle' ? 75 : 72} Q60 82 ${ch.shape === 'triangle' ? 68 : 70} ${ch.shape === 'triangle' ? 75 : 72}`} stroke={eliminated ? '#999' : '#2D3436'} strokeWidth="2" fill="none" strokeLinecap="round" />
+                      </svg>
+                      <span className="gw-char-label">{ch.label}</span>
+                      {eliminated && <span className="gw-char-x">✕</span>}
+                      {isMystery && <span className="gw-char-check">✓</span>}
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="gw-traits">
+                <p className="gw-trait-title">Ask a question:</p>
+                <div className="gw-trait-grid">
+                  {guessWhoTraits.map((trait) => (
+                    <button key={trait.key} type="button"
+                      className={`gw-trait-btn ${gwAsked.includes(trait.key) ? 'asked' : ''}`}
+                      onClick={() => gwAskTrait(trait.key)}
+                      disabled={gwPhase !== 'ask' || gwAsked.includes(trait.key)}
+                      aria-label={trait.label}>
+                      {trait.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {gwPhase === 'right' && (
+                <button className="gw-play-again" onClick={gwInit} type="button">Play Again</button>
+              )}
             </div>
           )}
         </div>
