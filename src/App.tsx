@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import './App.css'
-import { Icon, EmojiIcon } from './icons'
+import { GameIcon, IconifyIcon, TicTacX, TicTacO } from './icons'
 
 // ===== TYPE DEFINITIONS =====
 type GameKey =
@@ -21,30 +21,30 @@ type Category = 'play' | 'study' | 'create' | 'braingames'
 
 // ===== GAME DEFINITIONS =====
 const allGames = [
-  // Play games (existing)
-  { key: 'math' as GameKey, title: 'Math Quest', description: 'Add, subtract, multiply!', icon: '🔢', level: '5+' } as const,
-  { key: 'science' as GameKey, title: 'Science Lab', description: 'Explore fun facts!', icon: '🔬', level: '6+' } as const,
-  { key: 'memory' as GameKey, title: 'Memory Match', description: 'Find matching pairs!', icon: '🧠', level: '3+' } as const,
-  { key: 'snake' as GameKey, title: 'Rainbow Snake', description: 'Collect gems & grow!', icon: '🐍', level: 'All' } as const,
-  { key: 'puzzles' as GameKey, title: 'Puzzle Portal', description: 'Slide tiles in order!', icon: '🧩', level: '6+' } as const,
-  { key: 'bubbles' as GameKey, title: 'Bubble Pop', description: 'Pop the right count!', icon: '🫧', level: '2+' } as const,
-  { key: 'colors' as GameKey, title: 'Color Quest', description: 'Match the colors!', icon: '🎨', level: '2+' } as const,
-  { key: 'shapes' as GameKey, title: 'Shape Wizard', description: 'Learn your shapes!', icon: '🔺', level: '2+' } as const,
-  { key: 'animals' as GameKey, title: 'Animal Sounds', description: 'What do they say?', icon: '🐾', level: '2+' } as const,
-  { key: 'spelling' as GameKey, title: 'Spelling Bee', description: 'Match the word!', icon: '📝', level: '5+' } as const,
-  { key: 'counting' as GameKey, title: 'Counting Stars', description: 'Count the emojis!', icon: '🔢', level: '2+' } as const,
-  { key: 'patterns' as GameKey, title: 'Pattern Puzzles', description: 'Find what comes next!', icon: '🔷', level: '4+' } as const,
-  { key: 'riddles' as GameKey, title: 'Riddle Me', description: 'Solve fun riddles!', icon: '🤔', level: '6+' } as const,
-  { key: 'bigger' as GameKey, title: 'Bigger or Smaller', description: 'Compare numbers!', icon: '📏', level: '3+' } as const,
-  // New brain games
-  { key: 'tictactoe' as GameKey, title: 'Tic-Tac-Toe', description: 'Star vs Moon battle!', icon: '⭐', level: '4+' } as const,
-  // New study
-  { key: 'flashcards' as GameKey, title: 'Flash Cards', description: 'Learn cool facts!', icon: '📇', level: '3+' } as const,
-  // Create
-  { key: 'drawing' as GameKey, title: 'Drawing Pad', description: 'Draw anything!', icon: '✏️', level: '2+' } as const,
+  // Play games
+  { key: 'math' as GameKey, title: 'Math Quest', description: 'Add, subtract, multiply!', level: '5+' } as const,
+  { key: 'science' as GameKey, title: 'Science Lab', description: 'Explore fun facts!', level: '6+' } as const,
+  { key: 'memory' as GameKey, title: 'Memory Match', description: 'Find matching pairs!', level: '3+' } as const,
+  { key: 'snake' as GameKey, title: 'Rainbow Snake', description: 'Collect gems & grow!', level: 'All' } as const,
+  { key: 'puzzles' as GameKey, title: 'Puzzle Portal', description: 'Slide tiles in order!', level: '6+' } as const,
+  { key: 'bubbles' as GameKey, title: 'Bubble Pop', description: 'Pop the right count!', level: '2+' } as const,
+  { key: 'colors' as GameKey, title: 'Color Quest', description: 'Match the colors!', level: '2+' } as const,
+  { key: 'shapes' as GameKey, title: 'Shape Wizard', description: 'Learn your shapes!', level: '2+' } as const,
+  { key: 'animals' as GameKey, title: 'Animal Sounds', description: 'What do they say?', level: '2+' } as const,
+  { key: 'spelling' as GameKey, title: 'Spelling Bee', description: 'Match the word!', level: '5+' } as const,
+  { key: 'counting' as GameKey, title: 'Counting Stars', description: 'Count them up!', level: '2+' } as const,
+  { key: 'patterns' as GameKey, title: 'Pattern Puzzles', description: 'Find what comes next!', level: '4+' } as const,
+  { key: 'riddles' as GameKey, title: 'Riddle Me', description: 'Solve fun riddles!', level: '6+' } as const,
+  { key: 'bigger' as GameKey, title: 'Bigger or Smaller', description: 'Compare numbers!', level: '3+' } as const,
   // Brain games
-  { key: 'typing' as GameKey, title: 'Quick Typing', description: 'Type letters & words!', icon: '⌨️', level: '6+' } as const,
-  { key: 'guesswho' as GameKey, title: 'Guess Who?', description: 'Find the mystery character!', icon: '🎯', level: '4+' } as const,
+  { key: 'tictactoe' as GameKey, title: 'Tic-Tac-Toe', description: 'Classic battle game!', level: '4+' } as const,
+  // Study
+  { key: 'flashcards' as GameKey, title: 'Flash Cards', description: 'Learn cool facts!', level: '3+' } as const,
+  // Create
+  { key: 'drawing' as GameKey, title: 'Drawing Pad', description: 'Draw anything!', level: '2+' } as const,
+  // Brain games
+  { key: 'typing' as GameKey, title: 'Quick Typing', description: 'Type letters & words!', level: '6+' } as const,
+  { key: 'guesswho' as GameKey, title: 'Guess Who?', description: 'Find the mystery character!', level: '4+' } as const,
 ]
 
 const gamesByCategory: Record<Category, GameKey[]> = {
@@ -55,10 +55,10 @@ const gamesByCategory: Record<Category, GameKey[]> = {
 }
 
 const categoryInfo: Record<Category, { label: string; icon: string }> = {
-  play: { label: 'Play', icon: '🎮' } as const,
-  study: { label: 'Study', icon: '📚' } as const,
-  create: { label: 'Create', icon: '🎨' } as const,
-  braingames: { label: 'Brain Games', icon: '🧠' } as const,
+  play: { label: 'Play', icon: '' } as const,
+  study: { label: 'Study', icon: '' } as const,
+  create: { label: 'Create', icon: '' } as const,
+  braingames: { label: 'Brain Games', icon: '' } as const,
 }
 
 // ===== EXISTING GAME DATA (preserved) =====
@@ -121,20 +121,20 @@ const scienceQuestions: ChoiceRound[] = Array.from({ length: 125 }, (_, index) =
 })
 
 const words = [
-  ['🐱', 'CAT'], ['🐶', 'DOG'], ['☀️', 'SUN'], ['🌳', 'TREE'], ['📚', 'BOOK'], ['🚗', 'CAR'], ['🏠', 'HOME'], ['🐟', 'FISH'], ['🐦', 'BIRD'], ['⭐', 'STAR'],
-  ['🌙', 'MOON'], ['🍎', 'APPLE'], ['🎂', 'CAKE'], ['⚽', 'BALL'], ['🚌', 'BUS'], ['🚂', 'TRAIN'], ['🐸', 'FROG'], ['🦆', 'DUCK'], ['🐝', 'BEE'], ['🌸', 'FLOWER'],
+  ['Cat', 'CAT'], ['Dog', 'DOG'], ['Sun', 'SUN'], ['Tree', 'TREE'], ['Book', 'BOOK'], ['Car', 'CAR'], ['Home', 'HOME'], ['Fish', 'FISH'], ['Bird', 'BIRD'], ['Star', 'STAR'],
+  ['Moon', 'MOON'], ['Apple', 'APPLE'], ['Cake', 'CAKE'], ['Ball', 'BALL'], ['Bus', 'BUS'], ['Train', 'TRAIN'], ['Frog', 'FROG'], ['Duck', 'DUCK'], ['Bee', 'BEE'], ['Flower', 'FLOWER'],
 ]
 
 const spellingRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
-  const [emoji, word] = words[index % words.length]
+  const [label, word] = words[index % words.length]
   const wrongOne = words[(index + 3) % words.length][1]
   const wrongTwo = words[(index + 7) % words.length][1]
-  return { prompt: `${emoji} Which word matches?`, answers: [word, wrongOne, wrongTwo], correct: word, helper: `Word round ${index + 1} of 120` }
+  return { prompt: `${label} — Which word matches?`, answers: [word, wrongOne, wrongTwo], correct: word, helper: `Word round ${index + 1} of 120` }
 })
 
 const colorObjects = [
-  ['apple 🍎', 'Red'], ['banana 🍌', 'Yellow'], ['grass 🌱', 'Green'], ['sky ☁️', 'Blue'], ['pumpkin 🎃', 'Orange'],
-  ['grape 🍇', 'Purple'], ['snowman ⛄', 'White'], ['chocolate 🍫', 'Brown'], ['heart 💗', 'Pink'], ['night sky 🌌', 'Black'],
+  ['apple', 'Red'], ['banana', 'Yellow'], ['grass', 'Green'], ['sky', 'Blue'], ['pumpkin', 'Orange'],
+  ['grape', 'Purple'], ['snowman', 'White'], ['chocolate', 'Brown'], ['heart', 'Pink'], ['night sky', 'Black'],
 ]
 const colorChoicesList = ['Red', 'Yellow', 'Green', 'Blue', 'Orange', 'Purple', 'White', 'Brown', 'Pink', 'Black']
 const colorRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
@@ -146,12 +146,12 @@ const colorRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
     helper: `Color round ${index + 1} of 120`,
   }
 })
-const countEmojis = ['⭐', '🚗', '🍎', '🦖', '🧸', '🎈', '🐠', '🌼', '🚀', '🦋']
+const countEmojis = ['*', 'o', 'x', '+', '#', '~', '@', '^', '!', '?']
 const countingRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
   const count = (index % 10) + 1
   const emoji = countEmojis[index % countEmojis.length]
   return {
-    prompt: `${Array.from({ length: count }, () => emoji).join(' ')}\nHow many do you see?`,
+    prompt: `${Array.from({ length: count }, () => emoji).join(' ')}\nHow many symbols do you see?`,
     answers: numberChoices(count),
     correct: String(count),
     helper: `Counting round ${index + 1} of 120`,
@@ -159,25 +159,25 @@ const countingRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => 
 })
 
 const shapeItems = [
-  ['⚪', 'Circle'], ['🟦', 'Square'], ['🔺', 'Triangle'], ['⭐', 'Star'], ['❤️', 'Heart'], ['💎', 'Diamond'], ['🥚', 'Oval'], ['▭', 'Rectangle'],
-  ['⬠', 'Pentagon'], ['⬡', 'Hexagon'], ['🔶', 'Octagon'], ['🌙', 'Crescent'], ['➕', 'Cross'], ['▶', 'Arrow'], ['▱', 'Parallelogram'], ['🌀', 'Spiral'],
+  ['Circle', 'Circle'], ['Square', 'Square'], ['Triangle', 'Triangle'], ['Star', 'Star'], ['Heart', 'Heart'], ['Diamond', 'Diamond'], ['Oval', 'Oval'], ['Rectangle', 'Rectangle'],
+  ['Pentagon', 'Pentagon'], ['Hexagon', 'Hexagon'], ['Octagon', 'Octagon'], ['Crescent', 'Crescent'], ['Cross', 'Cross'], ['Arrow', 'Arrow'], ['Parallelogram', 'Parallelogram'], ['Spiral', 'Spiral'],
 ]
 const shapeRounds: ChoiceRound[] = Array.from({ length: 180 }, (_, index) => {
   const [shape, correct] = shapeItems[index % shapeItems.length]
   return {
-    prompt: `${shape} What shape is this?`,
+    prompt: `What shape is "${shape}"?`,
     answers: [correct, shapeItems[(index + 3) % shapeItems.length][1], shapeItems[(index + 7) % shapeItems.length][1]],
     correct,
     helper: `Shape round ${index + 1} of 180`,
   }
 })
 const animalSounds = [
-  ['🐶', 'Woof'], ['🐱', 'Meow'], ['🐮', 'Moo'], ['🐷', 'Oink'], ['🐸', 'Ribbit'], ['🐥', 'Chirp'], ['🦁', 'Roar'], ['🐴', 'Neigh'], ['🐍', 'Hiss'], ['🐑', 'Baa'],
+  ['Dog', 'Woof'], ['Cat', 'Meow'], ['Cow', 'Moo'], ['Pig', 'Oink'], ['Frog', 'Ribbit'], ['Chick', 'Chirp'], ['Lion', 'Roar'], ['Horse', 'Neigh'], ['Snake', 'Hiss'], ['Sheep', 'Baa'],
 ]
 const animalRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
   const [animal, correct] = animalSounds[index % animalSounds.length]
   return {
-    prompt: `${animal} Which sound does this animal make?`,
+    prompt: `${animal} — Which sound does this animal make?`,
     answers: [correct, animalSounds[(index + 3) % animalSounds.length][1], animalSounds[(index + 6) % animalSounds.length][1]],
     correct,
     helper: `Animal round ${index + 1} of 120`,
@@ -194,17 +194,17 @@ const biggerRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
 
 const patternRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
   if (index % 3 === 0) {
-    const pair = index % 2 === 0 ? ['🔴', '🔵'] : ['🟢', '🟡']
-    return { prompt: `${pair[0]} ${pair[1]} ${pair[0]} ${pair[1]} ?`, answers: [pair[0], pair[1], '⭐'], correct: pair[0], helper: `Pattern round ${index + 1} of 120` }
+    const pair = index % 2 === 0 ? ['Red', 'Blue'] : ['Green', 'Yellow']
+    return { prompt: `${pair[0]} ${pair[1]} ${pair[0]} ${pair[1]} ?`, answers: [pair[0], pair[1], 'Purple'], correct: pair[0], helper: `Pattern round ${index + 1} of 120` }
   }
   if (index % 3 === 1) {
     const start = (index % 8) + 1
     return { prompt: `${start}, ${start + 2}, ${start + 4}, ?`, answers: [String(start + 6), String(start + 5), String(start + 8)], correct: String(start + 6), helper: `Pattern round ${index + 1} of 120` }
   }
-  return { prompt: `⭐ ⭐ 🌙 ⭐ ⭐ 🌙 ?`, answers: ['⭐', '🌙', '☀️'], correct: '⭐', helper: `Pattern round ${index + 1} of 120` }
+  return { prompt: `A A B A A B ?`, answers: ['A', 'B', 'C'], correct: 'A', helper: `Pattern round ${index + 1} of 120` }
 })
 
-const memorySymbols = ['🌟', '🚀', '🧠', '🦕', '🌈', '🔬', '🎈', '🧸', '🐠', '🍎', '🦋', '⚽']
+const memorySymbols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 const memoryBoards = Array.from({ length: 120 }, (_, index) => {
   const symbols = Array.from({ length: 6 }, (_, offset) => memorySymbols[(index + offset) % memorySymbols.length])
   return [...symbols, ...symbols].map((_, cardIndex, cards) => cards[(cardIndex * 5 + index) % cards.length])
@@ -233,44 +233,44 @@ const riddleRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
 // ===== NEW: FLASHCARD DATA =====
 const flashcardCategories = {
   Animals: [
-    { emoji: '🦁', title: 'Lion', fact: 'A group of lions is called a pride. Lions are the only cats that live in groups!' },
-    { emoji: '🐘', title: 'Elephant', fact: 'Elephants are the largest land animals. They can weigh up to 6,000 kg!' },
-    { emoji: '🐬', title: 'Dolphin', fact: 'Dolphins sleep with one eye open! They rest half their brain at a time.' },
-    { emoji: '🦋', title: 'Butterfly', fact: 'Butterflies taste with their feet! They have sensors on their legs.' },
-    { emoji: '🦉', title: 'Owl', fact: 'Owls can rotate their heads 270 degrees! They have 14 neck bones.' },
-    { emoji: '🐧', title: 'Penguin', fact: 'Penguins can jump up to 6 feet high! They are excellent swimmers.' },
-    { emoji: '🦎', title: 'Chameleon', fact: 'Chameleons can move their eyes in two different directions at once!' },
-    { emoji: '🐝', title: 'Honey Bee', fact: 'A honey bee can fly at 15 miles per hour and visits up to 100 flowers per trip!' },
+    { emoji: 'mdi:lion', title: 'Lion', fact: 'A group of lions is called a pride. Lions are the only cats that live in groups!' },
+    { emoji: 'mdi:elephant', title: 'Elephant', fact: 'Elephants are the largest land animals. They can weigh up to 6,000 kg!' },
+    { emoji: 'mdi:dolphin', title: 'Dolphin', fact: 'Dolphins sleep with one eye open! They rest half their brain at a time.' },
+    { emoji: 'mdi:butterfly', title: 'Butterfly', fact: 'Butterflies taste with their feet! They have sensors on their legs.' },
+    { emoji: 'mdi:owl', title: 'Owl', fact: 'Owls can rotate their heads 270 degrees! They have 14 neck bones.' },
+    { emoji: 'mdi:penguin', title: 'Penguin', fact: 'Penguins can jump up to 6 feet high! They are excellent swimmers.' },
+    { emoji: 'mdi:lizard', title: 'Chameleon', fact: 'Chameleons can move their eyes in two different directions at once!' },
+    { emoji: 'mdi:bee', title: 'Honey Bee', fact: 'A honey bee can fly at 15 miles per hour and visits up to 100 flowers per trip!' },
   ],
   Planets: [
-    { emoji: '☀️', title: 'The Sun', fact: 'The Sun is a star! It is 109 times wider than Earth and 4.6 billion years old.' },
-    { emoji: '🌍', title: 'Earth', fact: 'Earth is the only planet known to have life. About 71% is covered in water!' },
-    { emoji: '🌙', title: 'The Moon', fact: 'The Moon is slowly moving away from Earth — about 3.8 cm every year!' },
-    { emoji: '🔴', title: 'Mars', fact: 'Mars is called the Red Planet because of iron oxide (rust) on its surface.' },
-    { emoji: '🪐', title: 'Saturn', fact: 'Saturn\'s rings are made of ice and rock. It\'s the least dense planet — it could float in water!' },
-    { emoji: '🌊', title: 'Neptune', fact: 'Neptune has the strongest winds in the solar system — up to 2,100 km/h!' },
-    { emoji: '☄️', title: 'Jupiter', fact: 'Jupiter is the largest planet. Its Great Red Spot is a storm bigger than Earth!' },
-    { emoji: '🌕', title: 'Pluto', fact: 'Pluto is a dwarf planet. One year on Pluto is 248 Earth years long!' },
+    { emoji: 'mdi:white-balance-sunny', title: 'The Sun', fact: 'The Sun is a star! It is 109 times wider than Earth and 4.6 billion years old.' },
+    { emoji: 'mdi:earth', title: 'Earth', fact: 'Earth is the only planet known to have life. About 71% is covered in water!' },
+    { emoji: 'mdi:moon-waning-crescent', title: 'The Moon', fact: 'The Moon is slowly moving away from Earth — about 3.8 cm every year!' },
+    { emoji: 'mdi:orbit', title: 'Mars', fact: 'Mars is called the Red Planet because of iron oxide (rust) on its surface.' },
+    { emoji: 'mdi:satellite-variant', title: 'Saturn', fact: 'Saturn\'s rings are made of ice and rock. It\'s the least dense planet — it could float in water!' },
+    { emoji: 'mdi:weather-windy', title: 'Neptune', fact: 'Neptune has the strongest winds in the solar system — up to 2,100 km/h!' },
+    { emoji: 'mdi:telescope', title: 'Jupiter', fact: 'Jupiter is the largest planet. Its Great Red Spot is a storm bigger than Earth!' },
+    { emoji: 'mdi:circle-small', title: 'Pluto', fact: 'Pluto is a dwarf planet. One year on Pluto is 248 Earth years long!' },
   ],
   'Human Body': [
-    { emoji: '🫀', title: 'Heart', fact: 'Your heart beats about 100,000 times a day! That\'s 35 million times a year.' },
-    { emoji: '🧠', title: 'Brain', fact: 'Your brain sends signals at 268 miles per hour! It uses 20% of your body\'s energy.' },
-    { emoji: '🦴', title: 'Bones', fact: 'Babies are born with 300 bones, but adults have 206. Some bones fuse together as you grow!' },
-    { emoji: '👁️', title: 'Eyes', fact: 'Your eyes can distinguish about 10 million different colors! They blink 15-20 times per minute.' },
-    { emoji: '👅', title: 'Tongue', fact: 'Your tongue has about 10,000 taste buds! They renew every 10-14 days.' },
-    { emoji: '🫁', title: 'Lungs', fact: 'Your lungs have about 300 million tiny air sacs! They can hold about 6 liters of air.' },
-    { emoji: '💪', title: 'Muscles', fact: 'You have over 600 muscles in your body! The strongest is the masseter (jaw muscle).' },
-    { emoji: '🩸', title: 'Blood', fact: 'Your body has about 5 liters of blood! Red blood cells travel through your body in 20 seconds.' },
+    { emoji: 'mdi:heart', title: 'Heart', fact: 'Your heart beats about 100,000 times a day! That\'s 35 million times a year.' },
+    { emoji: 'mdi:brain', title: 'Brain', fact: 'Your brain sends signals at 268 miles per hour! It uses 20% of your body\'s energy.' },
+    { emoji: 'mdi:bone', title: 'Bones', fact: 'Babies are born with 300 bones, but adults have 206. Some bones fuse together as you grow!' },
+    { emoji: 'mdi:eye', title: 'Eyes', fact: 'Your eyes can distinguish about 10 million different colors! They blink 15-20 times per minute.' },
+    { emoji: 'mdi:food-apple', title: 'Tongue', fact: 'Your tongue has about 10,000 taste buds! They renew every 10-14 days.' },
+    { emoji: 'mdi:lungs', title: 'Lungs', fact: 'Your lungs have about 300 million tiny air sacs! They can hold about 6 liters of air.' },
+    { emoji: 'mdi:arm-flex', title: 'Muscles', fact: 'You have over 600 muscles in your body! The strongest is the masseter (jaw muscle).' },
+    { emoji: 'mdi:water', title: 'Blood', fact: 'Your body has about 5 liters of blood! Red blood cells travel through your body in 20 seconds.' },
   ],
   'Fun Facts': [
-    { emoji: '🌈', title: 'Rainbows', fact: 'No two people see the same rainbow! Each person sees a different set of colors from their own angle.' },
-    { emoji: '🍿', title: 'Popcorn', fact: 'Popcorn has been around for thousands of years! It was discovered by ancient Aztecs.' },
-    { emoji: '🍌', title: 'Bananas', fact: 'Bananas are berries! But strawberries are not actually berries.' },
-    { emoji: '🐙', title: 'Octopus', fact: 'Octopuses have three hearts! Two pump blood to the gills, one to the rest of the body.' },
-    { emoji: '🌊', title: 'Ocean', fact: 'We have explored less than 5% of the ocean! More people have been to the Moon than the deep sea.' },
-    { emoji: '🍯', title: 'Honey', fact: 'Honey never spoils! Archaeologists found 3,000-year-old honey that was still edible.' },
-    { emoji: '❄️', title: 'Snowflakes', fact: 'Every snowflake is unique! They form differently based on temperature and humidity.' },
-    { emoji: '🌋', title: 'Volcanoes', fact: 'There are about 1,500 active volcanoes on Earth! Most are underwater.' },
+    { emoji: 'mdi:weather-rainbow', title: 'Rainbows', fact: 'No two people see the same rainbow! Each person sees a different set of colors from their own angle.' },
+    { emoji: 'mdi:popcorn', title: 'Popcorn', fact: 'Popcorn has been around for thousands of years! It was discovered by ancient Aztecs.' },
+    { emoji: 'mdi:food-apple', title: 'Bananas', fact: 'Bananas are berries! But strawberries are not actually berries.' },
+    { emoji: 'mdi:octagram', title: 'Octopus', fact: 'Octopuses have three hearts! Two pump blood to the gills, one to the rest of the body.' },
+    { emoji: 'mdi:waves', title: 'Ocean', fact: 'We have explored less than 5% of the ocean! More people have been to the Moon than the deep sea.' },
+    { emoji: 'mdi:beehive-outline', title: 'Honey', fact: 'Honey never spoils! Archaeologists found 3,000-year-old honey that was still edible.' },
+    { emoji: 'mdi:snowflake', title: 'Snowflakes', fact: 'Every snowflake is unique! They form differently based on temperature and humidity.' },
+    { emoji: 'mdi:image-filter-hdr', title: 'Volcanoes', fact: 'There are about 1,500 active volcanoes on Earth! Most are underwater.' },
   ],
 }
 
@@ -296,16 +296,16 @@ const funFactsList = [
 ]
 
 const dailyChallengeIdeas = [
-  { emoji: '🧮', title: 'Math Blitz', desc: 'Solve as many math problems as you can!' },
-  { emoji: '🧠', title: 'Memory Master', desc: 'Beat the memory matching game!' },
-  { emoji: '🔬', title: 'Science Explorer', desc: 'Answer science quiz questions!' },
-  { emoji: '🐍', title: 'Snake Champion', desc: 'Collect 5 gems in Rainbow Snake!' },
-  { emoji: '🧩', title: 'Puzzle Solver', desc: 'Solve the sliding puzzle!' },
-  { emoji: '📝', title: 'Spelling Star', desc: 'Practice your spelling words!' },
-  { emoji: '🤔', title: 'Riddle Master', desc: 'Solve tricky riddles!' },
-  { emoji: '📏', title: 'Number Compare', desc: 'Master bigger vs smaller!' },
-  { emoji: '🔷', title: 'Pattern Pro', desc: 'Complete the patterns!' },
-  { emoji: '✏️', title: 'Creative Creator', desc: 'Draw something amazing!' },
+  { emoji: '', title: 'Math Blitz', desc: 'Solve as many math problems as you can!' },
+  { emoji: '', title: 'Memory Master', desc: 'Beat the memory matching game!' },
+  { emoji: '', title: 'Science Explorer', desc: 'Answer science quiz questions!' },
+  { emoji: '', title: 'Snake Champion', desc: 'Collect 5 gems in Rainbow Snake!' },
+  { emoji: '', title: 'Puzzle Solver', desc: 'Solve the sliding puzzle!' },
+  { emoji: '', title: 'Spelling Star', desc: 'Practice your spelling words!' },
+  { emoji: '', title: 'Riddle Master', desc: 'Solve tricky riddles!' },
+  { emoji: '', title: 'Number Compare', desc: 'Master bigger vs smaller!' },
+  { emoji: '', title: 'Pattern Pro', desc: 'Complete the patterns!' },
+  { emoji: '', title: 'Creative Creator', desc: 'Draw something amazing!' },
 ]
 
 const typingLetterSets = {
@@ -1191,8 +1191,8 @@ function App() {
           <button className="game-panel-back" onClick={closeGame} type="button" aria-label="Back to game menu">
             ← Back
           </button>
-          <span className="game-panel-title"><Icon name={gameInfo.icon} size={22} /> {gameInfo.title}</span>
-          <span className="game-panel-stars"><Icon name="⭐" size={16} /> {starScore}</span>
+          <span className="game-panel-title"><GameIcon name={gameInfo.key} size={22} /> {gameInfo.title}</span>
+          <span className="game-panel-stars"><GameIcon name="stars" size={16} /> {starScore}</span>
         </div>
         <div className="game-panel-content" ref={panelRef}>
           {/* CHOICE GAMES */}
@@ -1240,7 +1240,7 @@ function App() {
                     const isHead = snakeCells[0] === index
                     const isBody = snakeCells.includes(index)
                     const isGem = snakeGem === index
-                    return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? <Icon name="💎" size={18} /> : ''}</span>
+                    return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? <GameIcon name="gem" size={16} /> : ''}</span>
                   })}
                 </div>
                 <div className="snake-controls">
@@ -1313,7 +1313,7 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <p className="round-count"><Icon name="X" size={18} /> vs <Icon name="O" size={18} /></p>
+                  <p className="round-count">X vs O</p>
                   <h2>Tic-Tac-Toe</h2>
                 </div>
               </div>
@@ -1339,8 +1339,8 @@ function App() {
               <p className="tictactoe-status">
                 {tttBotThinking ? <span className="bot-thinking">Bot thinking<span className="thinking-dots"><span>.</span><span>.</span><span>.</span></span></span> :
                  tttWinner === 'draw' ? "It's a draw! Great game!" :
-                 tttWinner ? <><Icon name={tttWinner} size={32} /> wins!</> :
-                 <><Icon name={tttTurn} size={32} />'s turn</>}
+                 tttWinner ? <><strong>{tttWinner} wins!</strong></> :
+                 <><strong>{tttTurn}'s turn</strong></>}
               </p>
               <div className="tictactoe-board">
                 {tttBoard.map((cell, i) => (
@@ -1349,11 +1349,11 @@ function App() {
                     onClick={() => tttMove(i)}
                     aria-label={cell === 'X' ? 'X' : cell === 'O' ? 'O' : `Empty cell ${i + 1}`}
                     disabled={!!cell || !!tttWinner || tttBotThinking}>
-                    {cell === 'X' ? <Icon name="X" size={64} /> : cell === 'O' ? <Icon name="O" size={64} /> : ''}
+                    {cell === 'X' ? <TicTacX size={56} /> : cell === 'O' ? <TicTacO size={56} /> : ''}
                   </button>
                 ))}
               </div>
-              <button className="tictactoe-reset" onClick={tttReset} type="button" aria-label="Reset game"><Icon name="🔄" size={18} /> New Game</button>
+              <button className="tictactoe-reset" onClick={tttReset} type="button" aria-label="Reset game"><IconifyIcon name="reload" size={16} /> New Game</button>
             </div>
           )}
 
@@ -1362,7 +1362,7 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <h2><Icon name="✏️" size={20} /> Drawing Pad</h2>
+                  <h2><GameIcon name="drawing" size={20} /> Drawing Pad</h2>
                 </div>
               </div>
               <div className="drawing-container">
@@ -1401,7 +1401,7 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <h2><Icon name="⌨️" size={20} /> Quick Typing</h2>
+                  <h2><GameIcon name="typing" size={20} /> Quick Typing</h2>
                 </div>
               </div>
               <div className="typing-container">
@@ -1458,7 +1458,7 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <h2><Icon name="📇" size={20} /> Flash Cards</h2>
+                  <h2><GameIcon name="flashcards" size={20} /> Flash Cards</h2>
                 </div>
               </div>
               <div className="flashcards-container">
@@ -1476,18 +1476,18 @@ function App() {
                   <div className={`flashcard ${flashcardFlipped ? 'flipped' : ''}`} onClick={toggleFlashcard} role="button" tabIndex={0} aria-label="Tap to flip card" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleFlashcard() }}>
                     <div className="flashcard-inner">
                       <div className="flashcard-front">
-                        <div className="flashcard-emoji"><EmojiIcon emoji={currentCard.emoji} size={56} /></div>
+                        <div className="flashcard-emoji"><IconifyIcon name={currentCard.emoji} size={48} /></div>
                         <div className="flashcard-label">{flashcardCat}</div>
                         <div className="flashcard-title">{currentCard.title}</div>
                       </div>
                       <div className="flashcard-back">
                         <div className="flashcard-fact">{currentCard.fact}</div>
-                        <div className="flashcard-hint"><Icon name="👆" size={16} /> Tap to flip back</div>
+                        <div className="flashcard-hint">Tap to flip back</div>
                       </div>
                     </div>
                   </div>
                 )}
-                <p className="flashcard-tap-hint"><Icon name="👆" size={16} /> Tap card to flip</p>
+                <p className="flashcard-tap-hint">Tap card to flip</p>
                 <div className="flashcard-nav">
                   <button type="button" onClick={prevFlashcard} aria-label="Previous card">← Previous</button>
                   <span className="flashcard-counter">{flashcardIdx + 1} / {currentCards.length}</span>
@@ -1512,14 +1512,14 @@ function App() {
                   className={`gw-mode-btn ${gwMode === '1p' ? 'active' : ''}`}
                   onClick={() => gwSetMode('1p')}
                   aria-label="Play vs bot">
-                  <Icon name="robot" size={20} />
+                  <GameIcon name="braingames" size={20} />
                   <span>vs Bot</span>
                 </button>
                 <button type="button"
                   className={`gw-mode-btn ${gwMode === '2p' ? 'active' : ''}`}
                   onClick={() => gwSetMode('2p')}
                   aria-label="Two player mode">
-                  <Icon name="2players" size={20} />
+                  <GameIcon name="play" size={20} />
                   <span>2 Players</span>
                 </button>
               </div>
@@ -1609,7 +1609,7 @@ function App() {
     return (
       <section aria-label={`${categoryInfo[category].label} games`}>
         <div className="section-header">
-          <h2><Icon name={categoryInfo[category].icon} size={22} /> {categoryInfo[category].label}</h2>
+          <h2><GameIcon name={category} size={22} /> {categoryInfo[category].label}</h2>
         </div>
         <div className="game-grid">
           {games.map((key) => {
@@ -1620,7 +1620,7 @@ function App() {
                 className={`game-card ${isNew ? 'new-badge' : ''}`}
                 onClick={() => openGame(key)}
                 aria-label={`Play ${info.title}`}>
-                <span className="game-card-icon"><Icon name={info.icon} size={32} /></span>
+                <span className="game-card-icon"><GameIcon name={info.key} size={36} /></span>
                 <span className="game-card-title">{info.title}</span>
                 <span className="game-card-desc">{info.description}</span>
                 <span className="game-card-badge">{info.level}</span>
@@ -1654,7 +1654,7 @@ function App() {
               </p>
               {agreementMessage && <p className="agreement-warning" role="alert">{agreementMessage}</p>}
               <div className="agreement-actions">
-                <button type="button" onClick={() => setHasParentAgreement(true)}><Icon name="🎮" size={18} /> I agree — let me play!</button>
+                <button type="button" onClick={() => setHasParentAgreement(true)}><GameIcon name="gamepad" size={18} /> I agree — let me play!</button>
                 <button type="button" className="reject"
                   onClick={() => setAgreementMessage('You need parent or guardian supervision to play Aaron Playground.')}>
                   I do not agree
@@ -1668,15 +1668,15 @@ function App() {
       {/* Header */}
       <header className="header">
         <div className="header-logo">
-          <span className="header-logo-icon"><Icon name="🌈" size={28} /></span>
+          <span className="header-logo-icon"><GameIcon name="rainbow" size={28} /></span>
           <h1>Aaron <span>Playground</span></h1>
         </div>
         <div className="header-stats">
           <span className="stat-badge stars" aria-label={`${starScore} stars earned`}>
-            <span className="stat-badge-icon"><Icon name="⭐" size={16} /></span> {starScore}
+            <span className="stat-badge-icon"><GameIcon name="stars" size={16} /></span> {starScore}
           </span>
           <span className="stat-badge streak" aria-label={`${dailyStreak} day streak`}>
-            <span className="stat-badge-icon"><Icon name="🔥" size={16} /></span> {dailyStreak}
+            <span className="stat-badge-icon"><GameIcon name="fire" size={16} /></span> {dailyStreak}
           </span>
         </div>
       </header>
@@ -1702,9 +1702,9 @@ function App() {
         const target = targetMap[dc.title] || 'math'
         openGame(target)
       }} role="button" tabIndex={0} aria-label="Daily Brain Challenge" onKeyDown={(e) => { if (e.key === 'Enter') { openGame('math') }}}>
-        <span className="daily-challenge-icon"><EmojiIcon emoji={getDailyChallenge().emoji} size={44} /></span>
+        <span className="daily-challenge-icon"><GameIcon name="sparkle" size={40} /></span>
         <div className="daily-challenge-text">
-          <div className="daily-label"><Icon name="🌟" size={14} /> Daily Brain Challenge</div>
+          <div className="daily-label"><GameIcon name="sparkle" size={14} /> Daily Brain Challenge</div>
           <div className="daily-title">{getDailyChallenge().title}</div>
           <div className="daily-desc">{getDailyChallenge().desc}</div>
         </div>
@@ -1713,7 +1713,7 @@ function App() {
 
       {/* Hero */}
       <section className="hero" aria-labelledby="main-title">
-        <div className="hero-mascots"><Icon name="🚀" size={36} /><Icon name="🌈" size={36} /><Icon name="🎨" size={36} /><Icon name="🧠" size={36} /><Icon name="✨" size={36} /></div>
+        <div className="hero-mascots"><GameIcon name="rocket" size={36} /><GameIcon name="rainbow" size={36} /><GameIcon name="palette" size={36} /><GameIcon name="braingames" size={36} /><GameIcon name="sparkle" size={36} /></div>
         <h2 id="main-title">Welcome to <span>Aaron Playground</span>!</h2>
         <p>Where learning meets fun! Explore games, study cool facts, create art, and challenge your brain. Every day is a new adventure!</p>
       </section>
@@ -1727,7 +1727,7 @@ function App() {
             aria-label={`${categoryInfo[cat].label} games`}
             aria-current={category === cat ? 'page' : undefined}
             data-cat={cat}>
-            <span className="tab-icon"><Icon name={categoryInfo[cat].icon} size={28} /></span>
+            <span className="tab-icon"><GameIcon name={cat} size={28} /></span>
             <span className="tab-label">{categoryInfo[cat].label}</span>
           </button>
         ))}
@@ -1741,7 +1741,7 @@ function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <span className="footer-emoji"><Icon name="🌟" size={16} /></span> Made with love for curious kids everywhere! <span className="footer-emoji"><Icon name="🌈" size={16} /></span>
+        <span className="footer-emoji"><GameIcon name="sparkle" size={16} /></span> Made with love for curious kids everywhere! <span className="footer-emoji"><GameIcon name="rainbow" size={16} /></span>
         <br />Keep playing, keep learning, keep shining!
       </footer>
 
@@ -1752,10 +1752,10 @@ function App() {
       {showMilestone && (
         <div className="milestone-popup" role="dialog" aria-modal="true" aria-label="Achievement milestone">
           <div className="milestone-card">
-            <div className="milestone-icon"><Icon name="🏆" size={48} /></div>
+            <div className="milestone-icon"><GameIcon name="trophy" size={48} /></div>
             <div className="milestone-title">Milestone Reached!</div>
             <div className="milestone-desc">{showMilestone}</div>
-            <button className="milestone-close" onClick={() => setShowMilestone(null)} type="button" aria-label="Close milestone"><Icon name="🎉" size={18} /> Awesome!</button>
+            <button className="milestone-close" onClick={() => setShowMilestone(null)} type="button" aria-label="Close milestone"><GameIcon name="celebration" size={18} /> Awesome!</button>
           </div>
         </div>
       )}
