@@ -1635,6 +1635,11 @@ function App() {
   // ===== MAIN RENDER =====
   return (
     <div className={hasParentAgreement ? 'app-container' : 'app-container locked'}>
+      {/* Floating decorative shapes */}
+      <div className="floating-shapes" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+      </div>
       {/* Parent Supervision Gate */}
       {!hasParentAgreement && (
         <section className="supervision-gate" aria-labelledby="supervision-title" role="dialog" aria-modal="true">
@@ -1720,8 +1725,9 @@ function App() {
             className={`category-tab ${category === cat ? 'active' : ''}`}
             onClick={() => setCategory(cat)}
             aria-label={`${categoryInfo[cat].label} games`}
-            aria-current={category === cat ? 'page' : undefined}>
-            <span className="tab-icon">{categoryInfo[cat].icon}</span>
+            aria-current={category === cat ? 'page' : undefined}
+            data-cat={cat}>
+            <span className="tab-icon"><Icon name={categoryInfo[cat].icon} size={28} /></span>
             <span className="tab-label">{categoryInfo[cat].label}</span>
           </button>
         ))}
