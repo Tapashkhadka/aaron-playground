@@ -998,6 +998,24 @@ function App() {
   }
 
   // ===== GUESS WHO? DATA =====
+
+  // SVG character component (reused in selection + guessing)
+  function GwCharSvg({ ch, eliminated }: { ch: typeof guessWhoChars[0]; eliminated: boolean }) {
+    return (
+      <svg viewBox="0 0 120 140" className="gw-char-svg">
+        {ch.shape === 'circle' && <circle cx="60" cy="60" r="38" fill={eliminated ? '#ddd' : ch.color} />}
+        {ch.shape === 'square' && <rect x="22" y="22" width="76" height="76" rx="10" fill={eliminated ? '#ddd' : ch.color} />}
+        {ch.shape === 'triangle' && <polygon points="60,18 105,95 15,95" fill={eliminated ? '#ddd' : ch.color} />}
+        {ch.crown && <polygon points="35,22 45,8 60,18 75,8 85,22" fill={eliminated ? '#999' : '#FFD93D'} stroke={eliminated ? '#999' : '#E6B800'} strokeWidth="1" />}
+        {ch.star && <polygon points="60,48 63,42 66,48 72,48 68,53 70,60 65,56 60,60 55,56 50,60 52,53 48,48 54,48" fill={eliminated ? '#999' : '#FFD93D'} />}
+        {ch.hat && <rect x="38" y="8" width="44" height="14" rx="2" fill={eliminated ? '#999' : '#AA96DA'} />}
+        <circle cx={ch.shape === 'triangle' ? 47 : 48} cy={ch.shape === 'triangle' ? 55 : 54} r="4" fill={eliminated ? '#999' : '#2D3436'} />
+        <circle cx={ch.shape === 'triangle' ? 73 : 72} cy={ch.shape === 'triangle' ? 55 : 54} r="4" fill={eliminated ? '#999' : '#2D3436'} />
+        <path d={`M${ch.shape === 'triangle' ? 52 : 50} ${ch.shape === 'triangle' ? 75 : 72} Q60 82 ${ch.shape === 'triangle' ? 68 : 70} ${ch.shape === 'triangle' ? 75 : 72}`} stroke={eliminated ? '#999' : '#2D3436'} strokeWidth="2" fill="none" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
   const guessWhoChars = [
     { id: 0, color: '#FF6B6B', shape: 'circle', star: true, crown: false, hat: false, label: 'Ruby' },
     { id: 1, color: '#4A90D9', shape: 'circle', star: false, crown: true, hat: false, label: 'Sky' },
@@ -1029,18 +1047,40 @@ function App() {
   const [gwMystery, setGwMystery] = useState<number>(0)
   const [gwAsked, setGwAsked] = useState<string[]>([])
   const [gwEliminated, setGwEliminated] = useState<Set<number>>(new Set())
-  const [gwPhase, setGwPhase] = useState<'ask' | 'right' | 'wrong'>('ask')
+  const [gwPhase, setGwPhase] = useState<'select' | 'ask' | 'right' | 'wrong'>('select')
   const [gwGuessId, setGwGuessId] = useState<number | null>(null)
-  const gwInitDone = useRef(false)
+  const [gwMode, setGwMode] = useState<'1p' | '2p'>('1p')
+  const [gwPickConfirm, setGwPickConfirm] = useState<number | null>(null)
 
-  function gwInit() {
+  function gwInit(mode?: '1p' | '2p') {
+    const m = mode || gwMode
     const pick = Math.floor(Math.random() * guessWhoChars.length)
     setGwMystery(pick)
     setGwAsked([])
     setGwEliminated(new Set())
-    setGwPhase('ask')
+    setGwPhase(m === '2p' ? 'select' : 'ask')
     setGwGuessId(null)
-    gwInitDone.current = true
+    setGwPickConfirm(null)
+  }
+
+  function gwSetMode(mode: '1p' | '2p') {
+    setGwMode(mode)
+    gwInit(mode)
+    setMessage(mode === '1p' ? 'vs Bot — the bot picked a character! Ask yes/no questions.' : '2 Players — Player 1, pick a character!')
+  }
+
+  // In 2p mode, Player 1 selects the mystery character
+  function gwPickCharacter(charId: number) {
+    if (gwPhase !== 'select') return
+    setGwPickConfirm(charId)
+  }
+
+  function gwConfirmPick() {
+    if (gwPickConfirm === null) return
+    setGwMystery(gwPickConfirm)
+    setGwPhase('ask')
+    setGwPickConfirm(null)
+    setMessage('Character locked! Player 2 — ask questions to find the mystery character!')
   }
 
   function gwAskTrait(traitKey: string) {
@@ -1073,10 +1113,10 @@ function App() {
     if (charId === gwMystery) {
       setGwPhase('right')
       addStars(3)
-      setMessage('Correct! You guessed the mystery character!')
+      setMessage(gwMode === '1p' ? 'Correct! You beat the bot!' : 'Correct! Player 2 found the character!')
     } else {
       setGwPhase('wrong')
-      setMessage('Not quite! Keep asking questions!')
+      setMessage(gwMode === '1p' ? 'Nope! The bot picked someone else. Keep asking!' : 'Wrong guess! Player 2, keep asking!')
       setTimeout(() => { setGwPhase('ask'); setGwGuessId(null) }, 1500)
     }
   }
@@ -1093,8 +1133,9 @@ function App() {
       pickTypingTarget(typingMode)
     }
     if (game === 'guesswho') {
-      gwInit()
-      setMessage('Who is the mystery character? Ask yes/no questions!')
+      setGwMode('1p')
+      gwInit('1p')
+      setMessage('vs Bot — the bot picked a character! Ask yes/no questions!')
     }
   }
 
@@ -1467,60 +1508,96 @@ function App() {
                   <h2>Guess Who?</h2>
                 </div>
               </div>
-              <p className="gw-instruction">
-                {gwPhase === 'right'
-                  ? <span className="gw-correct">You found the mystery character!</span>
-                  : 'Ask yes/no questions or click a character to guess!'}
-              </p>
-              <div className="gw-character-grid">
-                {guessWhoChars.map((ch) => {
-                  const eliminated = gwPhase !== 'right' && gwEliminated.has(ch.id)
-                  const isGuess = gwGuessId === ch.id
-                  const isMystery = gwPhase === 'right' && ch.id === gwMystery
-                  return (
-                    <button key={ch.id} type="button"
-                      className={`gw-char ${eliminated ? 'eliminated' : ''} ${isGuess ? (gwPhase === 'wrong' ? 'wrong' : '') : ''} ${isMystery ? 'revealed' : ''}`}
-                      onClick={() => gwGuess(ch.id)}
-                      disabled={gwPhase === 'right' || gwPhase === 'wrong'}
-                      aria-label={`Character ${ch.label}`}>
-                      <svg viewBox="0 0 120 140" className="gw-char-svg">
-                        {/* Body/base */}
-                        {ch.shape === 'circle' && <circle cx="60" cy="60" r="38" fill={eliminated ? '#ddd' : ch.color} />}
-                        {ch.shape === 'square' && <rect x="22" y="22" width="76" height="76" rx="10" fill={eliminated ? '#ddd' : ch.color} />}
-                        {ch.shape === 'triangle' && <polygon points="60,18 105,95 15,95" fill={eliminated ? '#ddd' : ch.color} />}
-                        {/* Accessories */}
-                        {ch.crown && <polygon points="35,22 45,8 60,18 75,8 85,22" fill={eliminated ? '#999' : '#FFD93D'} stroke={eliminated ? '#999' : '#E6B800'} strokeWidth="1" />}
-                        {ch.star && <polygon points="60,48 63,42 66,48 72,48 68,53 70,60 65,56 60,60 55,56 50,60 52,53 48,48 54,48" fill={eliminated ? '#999' : '#FFD93D'} />}
-                        {ch.hat && <rect x="38" y="8" width="44" height="14" rx="2" fill={eliminated ? '#999' : '#AA96DA'} />}
-                        {/* Eyes */}
-                        <circle cx={ch.shape === 'triangle' ? 47 : 48} cy={ch.shape === 'triangle' ? 55 : 54} r="4" fill={eliminated ? '#999' : '#2D3436'} />
-                        <circle cx={ch.shape === 'triangle' ? 73 : 72} cy={ch.shape === 'triangle' ? 55 : 54} r="4" fill={eliminated ? '#999' : '#2D3436'} />
-                        {/* Mouth */}
-                        <path d={`M${ch.shape === 'triangle' ? 52 : 50} ${ch.shape === 'triangle' ? 75 : 72} Q60 82 ${ch.shape === 'triangle' ? 68 : 70} ${ch.shape === 'triangle' ? 75 : 72}`} stroke={eliminated ? '#999' : '#2D3436'} strokeWidth="2" fill="none" strokeLinecap="round" />
-                      </svg>
-                      <span className="gw-char-label">{ch.label}</span>
-                      {eliminated && <span className="gw-char-x">✕</span>}
-                      {isMystery && <span className="gw-char-check">✓</span>}
-                    </button>
-                  )
-                })}
+
+              {/* Mode selector */}
+              <div className="gw-mode-selector">
+                <button type="button"
+                  className={`gw-mode-btn ${gwMode === '1p' ? 'active' : ''}`}
+                  onClick={() => gwSetMode('1p')}
+                  aria-label="Play vs bot">
+                  <Icon name="robot" size={20} />
+                  <span>vs Bot</span>
+                </button>
+                <button type="button"
+                  className={`gw-mode-btn ${gwMode === '2p' ? 'active' : ''}`}
+                  onClick={() => gwSetMode('2p')}
+                  aria-label="Two player mode">
+                  <Icon name="2players" size={20} />
+                  <span>2 Players</span>
+                </button>
               </div>
-              <div className="gw-traits">
-                <p className="gw-trait-title">Ask a question:</p>
-                <div className="gw-trait-grid">
-                  {guessWhoTraits.map((trait) => (
-                    <button key={trait.key} type="button"
-                      className={`gw-trait-btn ${gwAsked.includes(trait.key) ? 'asked' : ''}`}
-                      onClick={() => gwAskTrait(trait.key)}
-                      disabled={gwPhase !== 'ask' || gwAsked.includes(trait.key)}
-                      aria-label={trait.label}>
-                      {trait.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {gwPhase === 'right' && (
-                <button className="gw-play-again" onClick={gwInit} type="button">Play Again</button>
+
+              {/* 2P: Player 1 picks a character */}
+              {gwPhase === 'select' && (
+                <>
+                  <p className="gw-instruction">Player 1 — pick a character! (Player 2, look away!)</p>
+                  <div className="gw-character-grid">
+                    {guessWhoChars.map((ch) => (
+                      <button key={ch.id} type="button"
+                        className={`gw-char ${gwPickConfirm === ch.id ? 'gw-selected' : ''}`}
+                        onClick={() => gwPickCharacter(ch.id)}
+                        aria-label={`Pick ${ch.label}`}>
+                        <GwCharSvg ch={ch} eliminated={false} />
+                        <span className="gw-char-label">{ch.label}</span>
+                        {gwPickConfirm === ch.id && <span className="gw-char-check">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                  <button className="gw-confirm-pick" onClick={gwConfirmPick} disabled={gwPickConfirm === null} type="button">
+                    Confirm Character
+                  </button>
+                </>
+              )}
+
+              {/* Ask / Guess phase */}
+              {gwPhase !== 'select' && (
+                <>
+                  <p className="gw-instruction">
+                    {gwPhase === 'right'
+                      ? <span className="gw-correct">
+                          {gwMode === '1p' ? 'You found the mystery character!' : 'Player 2 found the character!'}
+                        </span>
+                      : gwMode === '1p'
+                        ? 'The bot picked someone. Ask yes/no questions, then click to guess!'
+                        : 'Player 2 — ask yes/no questions and click a character to guess!'}
+                  </p>
+                  <div className="gw-character-grid">
+                    {guessWhoChars.map((ch) => {
+                      const eliminated = gwPhase !== 'right' && gwEliminated.has(ch.id)
+                      const isGuess = gwGuessId === ch.id
+                      const isMystery = gwPhase === 'right' && ch.id === gwMystery
+                      return (
+                        <button key={ch.id} type="button"
+                          className={`gw-char ${eliminated ? 'eliminated' : ''} ${isGuess && gwPhase === 'wrong' ? 'wrong' : ''} ${isMystery ? 'revealed' : ''}`}
+                          onClick={() => gwGuess(ch.id)}
+                          disabled={gwPhase === 'right' || gwPhase === 'wrong'}
+                          aria-label={`Guess ${ch.label}`}>
+                          <GwCharSvg ch={ch} eliminated={eliminated} />
+                          <span className="gw-char-label">{ch.label}</span>
+                          {eliminated && <span className="gw-char-x">✕</span>}
+                          {isMystery && <span className="gw-char-check">✓</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <div className="gw-traits">
+                    <p className="gw-trait-title">Ask a question:</p>
+                    <div className="gw-trait-grid">
+                      {guessWhoTraits.map((trait) => (
+                        <button key={trait.key} type="button"
+                          className={`gw-trait-btn ${gwAsked.includes(trait.key) ? 'asked' : ''}`}
+                          onClick={() => gwAskTrait(trait.key)}
+                          disabled={gwPhase !== 'ask' || gwAsked.includes(trait.key)}
+                          aria-label={trait.label}>
+                          {trait.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {gwPhase === 'right' && (
+                    <button className="gw-play-again" onClick={() => gwInit(gwMode)} type="button">Play Again</button>
+                  )}
+                </>
               )}
             </div>
           )}

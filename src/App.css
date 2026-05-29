@@ -1685,6 +1685,51 @@
 }
 
 /* ===== GUESS WHO? ===== */
+.gw-mode-selector {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 14px 0 10px;
+}
+.gw-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-round);
+  border: 2px solid rgba(0,0,0,0.08);
+  background: var(--card-bg);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+  transition: all 0.2s ease;
+}
+.gw-mode-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.gw-mode-btn.active {
+  background: linear-gradient(135deg, var(--teal), #5ab866);
+  color: white;
+  border-color: var(--teal);
+  box-shadow: 0 4px 14px rgba(107, 203, 119, 0.3);
+}
+.gw-mode-btn.active img { filter: brightness(0) invert(1); }
+.gw-mode-btn img { width: 20px; height: 20px; filter: brightness(0.5); }
+.gw-confirm-pick {
+  display: block;
+  margin: 12px auto 0;
+  padding: 12px 32px;
+  border-radius: var(--radius-round);
+  background: linear-gradient(135deg, var(--teal), #5ab866);
+  color: white;
+  font-weight: 900;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.gw-confirm-pick:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(107,203,119,0.4); }
+.gw-confirm-pick:disabled { opacity: 0.4; cursor: default; }
+.gw-char.gw-selected { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(107,203,119,0.3); }
 .gw-instruction {
   text-align: center;
   font-size: 0.95rem;
