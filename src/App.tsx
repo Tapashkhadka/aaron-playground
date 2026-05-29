@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import './App.css'
+import { Icon, EmojiIcon } from './icons'
 
 // ===== TYPE DEFINITIONS =====
 type GameKey =
@@ -21,28 +22,28 @@ type Category = 'play' | 'study' | 'create' | 'braingames'
 // ===== GAME DEFINITIONS =====
 const allGames = [
   // Play games (existing)
-  { key: 'math' as GameKey, title: 'Math Quest', description: 'Add, subtract, multiply!', icon: '🔢', level: '5+' },
-  { key: 'science' as GameKey, title: 'Science Lab', description: 'Explore fun facts!', icon: '🔬', level: '6+' },
-  { key: 'memory' as GameKey, title: 'Memory Match', description: 'Find matching pairs!', icon: '🧠', level: '3+' },
-  { key: 'snake' as GameKey, title: 'Rainbow Snake', description: 'Collect gems & grow!', icon: '🐍', level: 'All' },
-  { key: 'puzzles' as GameKey, title: 'Puzzle Portal', description: 'Slide tiles in order!', icon: '🧩', level: '6+' },
-  { key: 'bubbles' as GameKey, title: 'Bubble Pop', description: 'Pop the right count!', icon: '🫧', level: '2+' },
-  { key: 'colors' as GameKey, title: 'Color Quest', description: 'Match the colors!', icon: '🎨', level: '2+' },
-  { key: 'shapes' as GameKey, title: 'Shape Wizard', description: 'Learn your shapes!', icon: '🔺', level: '2+' },
-  { key: 'animals' as GameKey, title: 'Animal Sounds', description: 'What do they say?', icon: '🐾', level: '2+' },
-  { key: 'spelling' as GameKey, title: 'Spelling Bee', description: 'Match the word!', icon: '📝', level: '5+' },
-  { key: 'counting' as GameKey, title: 'Counting Stars', description: 'Count the emojis!', icon: '🔢', level: '2+' },
-  { key: 'patterns' as GameKey, title: 'Pattern Puzzles', description: 'Find what comes next!', icon: '🔷', level: '4+' },
-  { key: 'riddles' as GameKey, title: 'Riddle Me', description: 'Solve fun riddles!', icon: '🤔', level: '6+' },
-  { key: 'bigger' as GameKey, title: 'Bigger or Smaller', description: 'Compare numbers!', icon: '📏', level: '3+' },
+  { key: 'math' as GameKey, title: 'Math Quest', description: 'Add, subtract, multiply!', icon: '🔢', level: '5+' } as const,
+  { key: 'science' as GameKey, title: 'Science Lab', description: 'Explore fun facts!', icon: '🔬', level: '6+' } as const,
+  { key: 'memory' as GameKey, title: 'Memory Match', description: 'Find matching pairs!', icon: '🧠', level: '3+' } as const,
+  { key: 'snake' as GameKey, title: 'Rainbow Snake', description: 'Collect gems & grow!', icon: '🐍', level: 'All' } as const,
+  { key: 'puzzles' as GameKey, title: 'Puzzle Portal', description: 'Slide tiles in order!', icon: '🧩', level: '6+' } as const,
+  { key: 'bubbles' as GameKey, title: 'Bubble Pop', description: 'Pop the right count!', icon: '🫧', level: '2+' } as const,
+  { key: 'colors' as GameKey, title: 'Color Quest', description: 'Match the colors!', icon: '🎨', level: '2+' } as const,
+  { key: 'shapes' as GameKey, title: 'Shape Wizard', description: 'Learn your shapes!', icon: '🔺', level: '2+' } as const,
+  { key: 'animals' as GameKey, title: 'Animal Sounds', description: 'What do they say?', icon: '🐾', level: '2+' } as const,
+  { key: 'spelling' as GameKey, title: 'Spelling Bee', description: 'Match the word!', icon: '📝', level: '5+' } as const,
+  { key: 'counting' as GameKey, title: 'Counting Stars', description: 'Count the emojis!', icon: '🔢', level: '2+' } as const,
+  { key: 'patterns' as GameKey, title: 'Pattern Puzzles', description: 'Find what comes next!', icon: '🔷', level: '4+' } as const,
+  { key: 'riddles' as GameKey, title: 'Riddle Me', description: 'Solve fun riddles!', icon: '🤔', level: '6+' } as const,
+  { key: 'bigger' as GameKey, title: 'Bigger or Smaller', description: 'Compare numbers!', icon: '📏', level: '3+' } as const,
   // New brain games
-  { key: 'tictactoe' as GameKey, title: 'Tic-Tac-Toe', description: '⭐ vs 🌙 battle!', icon: '⭐', level: '4+' },
+  { key: 'tictactoe' as GameKey, title: 'Tic-Tac-Toe', description: 'Star vs Moon battle!', icon: '⭐', level: '4+' } as const,
   // New study
-  { key: 'flashcards' as GameKey, title: 'Flash Cards', description: 'Learn cool facts!', icon: '📇', level: '3+' },
+  { key: 'flashcards' as GameKey, title: 'Flash Cards', description: 'Learn cool facts!', icon: '📇', level: '3+' } as const,
   // Create
-  { key: 'drawing' as GameKey, title: 'Drawing Pad', description: 'Draw anything!', icon: '✏️', level: '2+' },
+  { key: 'drawing' as GameKey, title: 'Drawing Pad', description: 'Draw anything!', icon: '✏️', level: '2+' } as const,
   // Brain games
-  { key: 'typing' as GameKey, title: 'Quick Typing', description: 'Type letters & words!', icon: '⌨️', level: '6+' },
+  { key: 'typing' as GameKey, title: 'Quick Typing', description: 'Type letters & words!', icon: '⌨️', level: '6+' } as const,
 ]
 
 const gamesByCategory: Record<Category, GameKey[]> = {
@@ -53,10 +54,10 @@ const gamesByCategory: Record<Category, GameKey[]> = {
 }
 
 const categoryInfo: Record<Category, { label: string; icon: string }> = {
-  play: { label: 'Play', icon: '🎮' },
-  study: { label: 'Study', icon: '📚' },
-  create: { label: 'Create', icon: '🎨' },
-  braingames: { label: 'Brain Games', icon: '🧠' },
+  play: { label: 'Play', icon: '🎮' } as const,
+  study: { label: 'Study', icon: '📚' } as const,
+  create: { label: 'Create', icon: '🎨' } as const,
+  braingames: { label: 'Brain Games', icon: '🧠' } as const,
 }
 
 // ===== EXISTING GAME DATA (preserved) =====
@@ -398,7 +399,7 @@ function App() {
   const [agreementMessage, setAgreementMessage] = useState('')
   const [category, setCategory] = useState<Category>('play')
   const [activeGame, setActiveGame] = useState<GameKey | null>(null)
-  const [message, setMessage] = useState('🌟 Welcome to Aaron Playground! Pick something fun!')
+  const [message, setMessage] = useState('Welcome to Aaron Playground! Pick something fun!')
 
   // Star / Achievement state
   const [starScore, setStarScore] = useState(() => {
@@ -501,7 +502,7 @@ function App() {
   }
 
   function triggerMilestone(count: number) {
-    setShowMilestone(`🎉 Amazing! You've earned ${count} stars! 🌟`)
+    setShowMilestone(`Amazing! You've earned ${count} stars!`)
     triggerConfetti()
   }
 
@@ -530,7 +531,7 @@ function App() {
 
     if (choice === current.correct) {
       addStars(1)
-      setMessage('Awesome answer! 🌟')
+      setMessage('Awesome answer!')
     } else {
       setMessage(`Good try! The answer was ${current.correct}.`)
     }
@@ -553,11 +554,11 @@ function App() {
         setFlipped([])
         if (nextMatched.length === currentBoard.length) {
           addStars(3)
-          setMessage('Board cleared! New memory board unlocked! 🧩')
+          setMessage('Board cleared! New memory board unlocked!')
           setMemoryBoardIndex((memoryBoardIndex + 1) % memoryBoards.length)
           setMatched([])
         } else {
-          setMessage('You found a match! 🧩')
+          setMessage('You found a match!')
         }
       } else {
         setMessage('Good try — remember those spots!')
@@ -576,7 +577,7 @@ function App() {
       if (hitWall || currentSnake.includes(nextHead)) {
         setSnakeScore(0)
         setSnakeGem(nextGem)
-        setMessage('Rainbow Snake restarted — try another path! 🐍')
+        setMessage('Rainbow Snake restarted — try another path!')
         return [112, 111, 110]
       }
       const nextSnake = [nextHead, ...currentSnake]
@@ -584,7 +585,7 @@ function App() {
         setSnakeScore((score) => score + 1)
         setSnakeGem(nextGem)
         addStars(1)
-        setMessage('Yum! You collected a gem! 💎')
+        setMessage('Yum! You collected a gem!')
         return nextSnake
       }
       return nextSnake.slice(0, currentSnake.length)
@@ -603,7 +604,7 @@ function App() {
     setPuzzleMoves((moves) => moves + 1)
     if (nextTiles.join(',') === '1,2,3,4,5,6,7,8,0') {
       addStars(5)
-      setMessage('Puzzle solved! Beautiful work! 🧩')
+      setMessage('Puzzle solved! Beautiful work!')
     } else {
       setMessage('Nice move — keep solving!')
     }
@@ -667,14 +668,14 @@ function App() {
         setTttWinner(newBoard[a])
         setTttWinningLine(pattern)
         addStars(3)
-        setMessage(`${newBoard[a]} wins! Amazing! 🎉`)
+        setMessage(`${newBoard[a]} wins! Amazing!`)
         return
       }
     }
 
     if (newBoard.every((cell) => cell !== '')) {
       setTttWinner('draw')
-      setMessage("It's a draw! Great game! 🎮")
+      setMessage("It's a draw! Great game!")
       return
     }
 
@@ -686,57 +687,78 @@ function App() {
     setTttTurn('⭐')
     setTttWinner(null)
     setTttWinningLine([])
-    setMessage('Tic-Tac-Toe! ⭐ goes first!')
+    setMessage('Tic-Tac-Toe!')
   }
 
-  // ===== DRAWING LOGIC =====
+  // ===== DRAWING LOGIC (Pointer Events — unified touch+mouse, accurate on all devices) =====
   function initCanvas() {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+    const dpr = window.devicePixelRatio || 1
     const rect = canvas.getBoundingClientRect()
-    canvas.width = rect.width * 2
-    canvas.height = rect.height * 2
-    ctx.scale(2, 2)
+    canvas.width = rect.width * dpr
+    canvas.height = rect.height * dpr
+    ctx.scale(dpr, dpr)
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, rect.width, rect.height)
+    restoreCtxProps(ctx)
+    drawHistoryRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)]
+  }
+
+  function restoreCtxProps(ctx: CanvasRenderingContext2D) {
     ctx.strokeStyle = drawColor
     ctx.lineWidth = drawSize
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
-    drawHistoryRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)]
   }
+
+  // ResizeObserver — reinit canvas on orientation change / resize
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
   useEffect(() => {
     if (activeGame === 'drawing') {
-      window.setTimeout(initCanvas, 50)
+      const timer = window.setTimeout(initCanvas, 50)
+      // Watch for resize (orientation change, mobile keyboard, etc.)
+      const canvas = canvasRef.current
+      if (canvas && canvas.parentElement) {
+        resizeObserverRef.current?.disconnect()
+        const ro = new ResizeObserver(() => {
+          // Debounce: wait for layout to settle
+          clearTimeout(timer)
+          window.setTimeout(initCanvas, 100)
+        })
+        ro.observe(canvas.parentElement)
+        resizeObserverRef.current = ro
+      }
+      return () => {
+        clearTimeout(timer)
+        resizeObserverRef.current?.disconnect()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGame])
 
-  function getCanvasPos(e: React.MouseEvent | React.TouchEvent): { x: number; y: number } | null {
+  function getCanvasPos(e: React.PointerEvent): { x: number; y: number } | null {
     const canvas = canvasRef.current
     if (!canvas) return null
     const rect = canvas.getBoundingClientRect()
-    if ('touches' in e) {
-      const touch = e.touches[0] || (e as React.TouchEvent).changedTouches[0]
-      if (!touch) return null
-      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top }
-    }
-    return { x: (e as React.MouseEvent).clientX - rect.left, y: (e as React.MouseEvent).clientY - rect.top }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
   }
 
-  function drawStart(e: React.MouseEvent | React.TouchEvent) {
+  function drawStart(e: React.PointerEvent) {
     e.preventDefault()
     const pos = getCanvasPos(e)
     if (!pos) return
     setIsDrawing(true)
     lastPosRef.current = pos
+    // Capture pointer so we don't lose events if finger leaves canvas
+    const canvas = canvasRef.current
+    if (canvas) canvas.setPointerCapture(e.pointerId)
   }
 
-  function drawMove(e: React.MouseEvent | React.TouchEvent) {
-    e.preventDefault()
+  function drawMove(e: React.PointerEvent) {
     if (!isDrawing) return
     const pos = getCanvasPos(e)
     if (!pos || !lastPosRef.current) return
@@ -755,11 +777,12 @@ function App() {
     lastPosRef.current = pos
   }
 
-  function drawEnd() {
+  function drawEnd(e: React.PointerEvent) {
     setIsDrawing(false)
     lastPosRef.current = null
     const canvas = canvasRef.current
     if (!canvas) return
+    try { canvas.releasePointerCapture(e.pointerId) } catch { /* ignore */ }
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     drawHistoryRef.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height))
@@ -770,11 +793,16 @@ function App() {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    const rect = canvas.getBoundingClientRect()
+    const dpr = window.devicePixelRatio || 1
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.fillStyle = 'white'
+    const rect = canvas.getBoundingClientRect()
     ctx.fillRect(0, 0, rect.width, rect.height)
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.scale(dpr, dpr)
+    restoreCtxProps(ctx)
     drawHistoryRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)]
-    setMessage('Canvas cleared! Start a new masterpiece! 🎨')
+    setMessage('Canvas cleared! Start a new masterpiece!')
   }
 
   function undoDrawing() {
@@ -785,7 +813,8 @@ function App() {
     if (!ctx) return
     drawHistoryRef.current.pop()
     ctx.putImageData(drawHistoryRef.current[drawHistoryRef.current.length - 1], 0, 0)
-    setMessage('Undo! 🎨')
+    restoreCtxProps(ctx)
+    setMessage('Undone!')
   }
 
   // ===== TYPING LOGIC =====
@@ -813,7 +842,7 @@ function App() {
       if (val === typingTarget) {
         setTypingCorrect((c) => c + 1)
         setTypingResult('correct')
-        setMessage(`Correct! ${typingTarget} 🎯`)
+        setMessage(`Correct! ${typingTarget}!`)
         addStars(1)
         setTimeout(() => {
           pickTypingTarget(typingMode)
@@ -862,10 +891,10 @@ function App() {
   // ===== GAME NAVIGATION =====
   function openGame(game: GameKey) {
     setActiveGame(game)
-    setMessage(`🌟 Let's play ${allGames.find(g => g.key === game)?.title || game}!`)
+    setMessage(`Let's play ${allGames.find(g => g.key === game)?.title || game}!`)
     if (game === 'tictactoe') {
       tttReset()
-      setMessage('Tic-Tac-Toe! ⭐ goes first!')
+      setMessage('Tic-Tac-Toe!')
     }
     if (game === 'typing') {
       pickTypingTarget(typingMode)
@@ -927,8 +956,8 @@ function App() {
           <button className="game-panel-back" onClick={closeGame} type="button" aria-label="Back to game menu">
             ← Back
           </button>
-          <span className="game-panel-title">{gameInfo.icon} {gameInfo.title}</span>
-          <span className="game-panel-stars">⭐ {starScore}</span>
+          <span className="game-panel-title"><Icon name={gameInfo.icon} size={22} /> {gameInfo.title}</span>
+          <span className="game-panel-stars"><Icon name="⭐" size={16} /> {starScore}</span>
         </div>
         <div className="game-panel-content" ref={panelRef}>
           {/* CHOICE GAMES */}
@@ -976,7 +1005,7 @@ function App() {
                     const isHead = snakeCells[0] === index
                     const isBody = snakeCells.includes(index)
                     const isGem = snakeGem === index
-                    return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? '💎' : ''}</span>
+                    return <span key={index} className={isHead ? 'snake-head' : isBody ? 'snake-body' : isGem ? 'snake-gem' : ''}>{isGem ? <Icon name="💎" size={18} /> : ''}</span>
                   })}
                 </div>
                 <div className="snake-controls">
@@ -1049,27 +1078,27 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <p className="round-count">⭐ vs 🌙</p>
+                  <p className="round-count"><Icon name="⭐" size={14} /> vs <Icon name="🌙" size={14} /></p>
                   <h2>Tic-Tac-Toe</h2>
                 </div>
               </div>
               <p className="tictactoe-status">
                 {tttWinner === 'draw' ? "It's a draw!" :
-                 tttWinner ? `${tttWinner} wins! 🎉` :
-                 `${tttTurn}'s turn`}
+                 tttWinner ? <><Icon name={tttWinner} size={18} /> wins! <Icon name="🎉" size={16} /></> :
+                 <><Icon name={tttTurn} size={16} />'s turn</>}
               </p>
               <div className="tictactoe-board">
                 {tttBoard.map((cell, i) => (
                   <button key={i} type="button"
                     className={`tictactoe-cell ${cell ? 'taken' : ''} ${tttWinningLine.includes(i) ? 'winning' : ''}`}
                     onClick={() => tttMove(i)}
-                    aria-label={cell || `Empty cell ${i + 1}`}
+                    aria-label={cell === '⭐' ? 'Star' : cell === '🌙' ? 'Moon' : `Empty cell ${i + 1}`}
                     disabled={!!cell || !!tttWinner}>
-                    {cell}
+                    {cell === '⭐' ? <Icon name="⭐" size={24} /> : cell === '🌙' ? <Icon name="🌙" size={24} /> : ''}
                   </button>
                 ))}
               </div>
-              <button className="tictactoe-reset" onClick={tttReset} type="button" aria-label="Reset game">🔄 New Game</button>
+              <button className="tictactoe-reset" onClick={tttReset} type="button" aria-label="Reset game">New Game</button>
             </div>
           )}
 
@@ -1078,14 +1107,13 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <h2>✏️ Drawing Pad</h2>
+                  <h2><Icon name="✏️" size={20} /> Drawing Pad</h2>
                 </div>
               </div>
               <div className="drawing-container">
                 <div className="drawing-canvas-wrapper">
                   <canvas ref={canvasRef} className="drawing-canvas"
-                    onMouseDown={drawStart} onMouseMove={drawMove} onMouseUp={drawEnd} onMouseLeave={drawEnd}
-                    onTouchStart={drawStart} onTouchMove={drawMove} onTouchEnd={drawEnd}
+                    onPointerDown={drawStart} onPointerMove={drawMove} onPointerUp={drawEnd} onPointerLeave={drawEnd}
                     aria-label="Drawing canvas" />
                 </div>
                 <div className="drawing-tools">
@@ -1107,7 +1135,7 @@ function App() {
                     </button>
                   ))}
                   <button className="drawing-action-btn undo" onClick={undoDrawing} type="button" aria-label="Undo last stroke">↩ Undo</button>
-                  <button className="drawing-action-btn clear" onClick={clearCanvas} type="button" aria-label="Clear canvas">🗑 Clear</button>
+                  <button className="drawing-action-btn clear" onClick={clearCanvas} type="button" aria-label="Clear canvas">Clear</button>
                 </div>
               </div>
             </div>
@@ -1118,7 +1146,7 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <h2>⌨️ Quick Typing</h2>
+                  <h2><Icon name="⌨️" size={20} /> Quick Typing</h2>
                 </div>
               </div>
               <div className="typing-container">
@@ -1175,7 +1203,7 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <h2>📇 Flash Cards</h2>
+                  <h2><Icon name="📇" size={20} /> Flash Cards</h2>
                 </div>
               </div>
               <div className="flashcards-container">
@@ -1193,7 +1221,7 @@ function App() {
                   <div className={`flashcard ${flashcardFlipped ? 'flipped' : ''}`} onClick={toggleFlashcard} role="button" tabIndex={0} aria-label="Tap to flip card" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleFlashcard() }}>
                     <div className="flashcard-inner">
                       <div className="flashcard-front">
-                        <div className="flashcard-emoji">{currentCard.emoji}</div>
+                        <div className="flashcard-emoji"><EmojiIcon emoji={currentCard.emoji} size={56} /></div>
                         <div className="flashcard-label">{flashcardCat}</div>
                         <div className="flashcard-title">{currentCard.title}</div>
                       </div>
@@ -1224,7 +1252,7 @@ function App() {
     return (
       <section aria-label={`${categoryInfo[category].label} games`}>
         <div className="section-header">
-          <h2><span className="section-emoji">{categoryInfo[category].icon}</span> {categoryInfo[category].label}</h2>
+          <h2><Icon name={categoryInfo[category].icon} size={22} /> {categoryInfo[category].label}</h2>
         </div>
         <div className="game-grid">
           {games.map((key) => {
@@ -1235,7 +1263,7 @@ function App() {
                 className={`game-card ${isNew ? 'new-badge' : ''}`}
                 onClick={() => openGame(key)}
                 aria-label={`Play ${info.title}`}>
-                <span className="game-card-icon">{info.icon}</span>
+                <span className="game-card-icon"><Icon name={info.icon} size={32} /></span>
                 <span className="game-card-title">{info.title}</span>
                 <span className="game-card-desc">{info.description}</span>
                 <span className="game-card-badge">{info.level}</span>
@@ -1256,7 +1284,7 @@ function App() {
           <div className="supervision-card">
             <img src="/aaron-playground/parent-supervision.jpg" alt="Aaron Playground welcome" />
             <div className="supervision-copy">
-              <p className="eyebrow">👋 Before You Play</p>
+              <p className="eyebrow">Before You Play</p>
               <h2 id="supervision-title">Parent supervision required</h2>
               <p>
                 Aaron Playground is made for kids. Please play with parent or guardian supervision.
@@ -1264,7 +1292,7 @@ function App() {
               </p>
               {agreementMessage && <p className="agreement-warning" role="alert">{agreementMessage}</p>}
               <div className="agreement-actions">
-                <button type="button" onClick={() => setHasParentAgreement(true)}>🎮 I agree — let me play!</button>
+                <button type="button" onClick={() => setHasParentAgreement(true)}><Icon name="🎮" size={18} /> I agree — let me play!</button>
                 <button type="button" className="reject"
                   onClick={() => setAgreementMessage('You need parent or guardian supervision to play Aaron Playground.')}>
                   I do not agree
@@ -1278,15 +1306,15 @@ function App() {
       {/* Header */}
       <header className="header">
         <div className="header-logo">
-          <span className="header-logo-icon">🌈</span>
+          <span className="header-logo-icon"><Icon name="🌈" size={28} /></span>
           <h1>Aaron <span>Playground</span></h1>
         </div>
         <div className="header-stats">
           <span className="stat-badge stars" aria-label={`${starScore} stars earned`}>
-            <span className="stat-badge-icon">⭐</span> {starScore}
+            <span className="stat-badge-icon"><Icon name="⭐" size={16} /></span> {starScore}
           </span>
           <span className="stat-badge streak" aria-label={`${dailyStreak} day streak`}>
-            <span className="stat-badge-icon">🔥</span> {dailyStreak}
+            <span className="stat-badge-icon"><Icon name="🔥" size={16} /></span> {dailyStreak}
           </span>
         </div>
       </header>
@@ -1312,9 +1340,9 @@ function App() {
         const target = targetMap[dc.title] || 'math'
         openGame(target)
       }} role="button" tabIndex={0} aria-label="Daily Brain Challenge" onKeyDown={(e) => { if (e.key === 'Enter') { openGame('math') }}}>
-        <span className="daily-challenge-icon">{getDailyChallenge().emoji}</span>
+        <span className="daily-challenge-icon"><EmojiIcon emoji={getDailyChallenge().emoji} size={44} /></span>
         <div className="daily-challenge-text">
-          <div className="daily-label">🌟 Daily Brain Challenge</div>
+          <div className="daily-label"><Icon name="🌟" size={14} /> Daily Brain Challenge</div>
           <div className="daily-title">{getDailyChallenge().title}</div>
           <div className="daily-desc">{getDailyChallenge().desc}</div>
         </div>
@@ -1323,9 +1351,9 @@ function App() {
 
       {/* Hero */}
       <section className="hero" aria-labelledby="main-title">
-        <div className="hero-mascots">🚀🌈🎨🧠✨</div>
+        <div className="hero-mascots"><Icon name="🚀" size={36} /><Icon name="🌈" size={36} /><Icon name="🎨" size={36} /><Icon name="🧠" size={36} /><Icon name="✨" size={36} /></div>
         <h2 id="main-title">Welcome to <span>Aaron Playground</span>!</h2>
-        <p>Where learning meets fun! Explore games, study cool facts, create art, and challenge your brain. Every day is a new adventure! 🌟</p>
+        <p>Where learning meets fun! Explore games, study cool facts, create art, and challenge your brain. Every day is a new adventure!</p>
       </section>
 
       {/* Category Tabs */}
@@ -1350,8 +1378,8 @@ function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <span className="footer-emoji">🌟</span> Made with love for curious kids everywhere! <span className="footer-emoji">🌈</span>
-        <br />Keep playing, keep learning, keep shining! ⭐
+        <span className="footer-emoji"><Icon name="🌟" size={16} /></span> Made with love for curious kids everywhere! <span className="footer-emoji"><Icon name="🌈" size={16} /></span>
+        <br />Keep playing, keep learning, keep shining!
       </footer>
 
       {/* Active Game Panel */}
@@ -1361,10 +1389,10 @@ function App() {
       {showMilestone && (
         <div className="milestone-popup" role="dialog" aria-modal="true" aria-label="Achievement milestone">
           <div className="milestone-card">
-            <div className="milestone-icon">🏆</div>
-            <div className="milestone-title">🌟 Milestone Reached!</div>
+            <div className="milestone-icon"><Icon name="🏆" size={48} /></div>
+            <div className="milestone-title">Milestone Reached!</div>
             <div className="milestone-desc">{showMilestone}</div>
-            <button className="milestone-close" onClick={() => setShowMilestone(null)} type="button" aria-label="Close milestone">🎉 Awesome!</button>
+            <button className="milestone-close" onClick={() => setShowMilestone(null)} type="button" aria-label="Close milestone"><Icon name="🎉" size={18} /> Awesome!</button>
           </div>
         </div>
       )}

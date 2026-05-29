@@ -157,8 +157,13 @@
 }
 
 .header-logo-icon {
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  display: flex;
+  align-items: center;
   animation: emoji-bounce 2s ease-in-out infinite;
+}
+
+.header-logo-icon svg {
+  display: block;
 }
 
 .header-logo h1 {
@@ -236,11 +241,11 @@
 }
 
 .hero-mascots {
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   animation: emoji-bounce 3s ease-in-out infinite;
-  position: relative;
-  z-index: 1;
 }
 
 .hero h2 {
@@ -285,10 +290,16 @@
 }
 
 .fun-facts-bar::before {
-  content: '💡';
-  font-size: 1.4rem;
+  content: '';
+  display: inline-block;
+  width: 1.4rem;
+  height: 1.4rem;
+  background: var(--yellow);
+  border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
   flex-shrink: 0;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M10 22h4v-2h-4v2zm1-20a6 6 0 00-3 11.1c1 .7 2 2 2 3.9h4c0-1.9 1-3.2 2-3.9A6 6 0 0011 2zm0 2a4 4 0 012 7.3c-.7.5-1.5 1.4-1.7 2.7h-.6c-.2-1.3-1-2.2-1.7-2.7A4 4 0 0111 4z'/%3E%3C/svg%3E") center/contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M10 22h4v-2h-4v2zm1-20a6 6 0 00-3 11.1c1 .7 2 2 2 3.9h4c0-1.9 1-3.2 2-3.9A6 6 0 0011 2zm0 2a4 4 0 012 7.3c-.7.5-1.5 1.4-1.7 2.7h-.6c-.2-1.3-1-2.2-1.7-2.7A4 4 0 0111 4z'/%3E%3C/svg%3E") center/contain no-repeat;
 }
 
 .fun-facts-bar .fun-fact-text {
@@ -428,12 +439,38 @@
 }
 
 .game-card-icon {
-  font-size: clamp(2rem, 5vw, 2.8rem);
-  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(3rem, 7vw, 4rem);
+  height: clamp(3rem, 7vw, 4rem);
+  color: var(--teal);
+  background: rgba(107, 203, 119, 0.12);
+  border-radius: var(--radius-md);
+  margin: 0 auto 0.6rem;
+  transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .game-card:hover .game-card-icon {
   animation: bounce 0.6s ease-in-out;
+  background: rgba(107, 203, 119, 0.2);
+}
+
+/* ===== SVG ICON BASE ===== */
+.game-card-icon svg {
+  display: block;
+}
+
+.stat-badge-icon,
+.footer-emoji {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.stat-badge-icon svg,
+.footer-emoji svg {
+  display: block;
 }
 
 .game-card-title {
@@ -572,7 +609,9 @@
 }
 
 .daily-challenge-icon {
-  font-size: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   animation: pulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -1046,6 +1085,7 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
+  touch-action: none;
 }
 
 .drawing-canvas {
@@ -1207,8 +1247,11 @@
 }
 
 .flashcard-front .flashcard-emoji {
-  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 12px;
+  min-height: 56px;
 }
 
 .flashcard-front .flashcard-label {
@@ -1428,7 +1471,9 @@
 }
 
 .milestone-icon {
-  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 12px;
 }
 
@@ -1558,7 +1603,7 @@
 
   .tictactoe-board { width: min(280px, 100%); }
 
-  .flashcard-front .flashcard-emoji { font-size: 2.2rem; }
+  .flashcard-front .flashcard-emoji { min-height: 40px; }
   .flashcard-front,
   .flashcard-back { padding: 16px; }
 }
