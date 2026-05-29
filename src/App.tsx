@@ -1197,14 +1197,14 @@ function App() {
                   className={`ttt-mode-btn ${tttMode === '2p' ? 'active' : ''}`}
                   onClick={() => tttSetMode('2p')}
                   aria-label="Two player mode">
-                  <Icon name="2players" size={24} />
+                  <img src="/aaron-playground/icon-two-players.svg" alt="" className="ttt-mode-img" />
                   <span className="ttt-mode-label">2 Players</span>
                 </button>
                 <button type="button"
                   className={`ttt-mode-btn ${tttMode === '1p' ? 'active' : ''}`}
                   onClick={() => tttSetMode('1p')}
                   aria-label="Play vs bot">
-                  <Icon name="robot" size={24} />
+                  <img src="/aaron-playground/icon-robot.svg" alt="" className="ttt-mode-img" />
                   <span className="ttt-mode-label">vs Bot</span>
                 </button>
               </div>

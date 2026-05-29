@@ -1041,6 +1041,18 @@
   box-shadow: 0 4px 14px rgba(170, 150, 218, 0.3);
 }
 
+.ttt-mode-img {
+  width: 22px;
+  height: 22px;
+  display: block;
+  filter: brightness(0.5);
+  transition: filter 0.2s ease;
+}
+
+.ttt-mode-btn.active .ttt-mode-img {
+  filter: brightness(0) invert(1);
+}
+
 .tictactoe-board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

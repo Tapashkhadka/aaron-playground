@@ -324,8 +324,6 @@ const iconMap = {
   '✨': IconSparkle,
   'X': TicTacX,
   'O': TicTacO,
-  '2players': IconTwoPlayers,
-  'robot': IconRobot,
 }
 
 // Fallback for emojis that don't have a mapped icon
@@ -356,48 +354,6 @@ export function EmojiIcon({ emoji, size = 36, className = '' }: { emoji: string;
     }} role="img">
       {emoji}
     </span>
-  )
-}
-
-// ===== MODE ICONS (no emoji — premium SVGs for buttons) =====
-
-export function IconTwoPlayers({ size = 24, className }: IconProps) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width={size} height={size} className={className}>
-      {/* Player 1 */}
-      <circle cx="80" cy="55" r="30" fill="var(--teal, #6BCB77)" opacity="0.9"/>
-      <circle cx="80" cy="55" r="26" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-      <path d="M55 120a25 25 0 0150 0v60H55z" fill="var(--teal, #6BCB77)" opacity="0.9"/>
-      {/* Player 2 */}
-      <circle cx="160" cy="55" r="30" fill="var(--lavender, #AA96DA)" opacity="0.9"/>
-      <circle cx="160" cy="55" r="26" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-      <path d="M135 120a25 25 0 0150 0v60h-50z" fill="var(--lavender, #AA96DA)" opacity="0.9"/>
-      {/* VS line */}
-      <text x="120" y="145" textAnchor="middle" fill="var(--navy, #2D3436)" fontSize="18" fontWeight="900" opacity="0.3">VS</text>
-    </svg>
-  )
-}
-
-export function IconRobot({ size = 24, className }: IconProps) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width={size} height={size} className={className}>
-      {/* Antenna */}
-      <rect x="112" y="15" width="16" height="20" rx="4" fill="var(--coral, #FF6B6B)"/>
-      <circle cx="120" cy="12" r="8" fill="var(--coral, #FF6B6B)"/>
-      {/* Head */}
-      <rect x="55" y="40" width="130" height="110" rx="20" fill="var(--coral, #FF6B6B)" opacity="0.9"/>
-      <rect x="55" y="40" width="130" height="110" rx="20" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/>
-      {/* Eyes */}
-      <rect x="78" y="68" width="36" height="36" rx="8" fill="white"/>
-      <rect x="126" y="68" width="36" height="36" rx="8" fill="white"/>
-      <circle cx="96" cy="86" r="12" fill="var(--navy, #2D3436)"/>
-      <circle cx="144" cy="86" r="12" fill="var(--navy, #2D3436)"/>
-      {/* Mouth */}
-      <rect x="85" y="120" width="70" height="8" rx="4" fill="rgba(255,255,255,0.6)"/>
-      {/* Ears */}
-      <rect x="42" y="65" width="16" height="40" rx="6" fill="var(--coral, #FF6B6B)" opacity="0.7"/>
-      <rect x="182" y="65" width="16" height="40" rx="6" fill="var(--coral, #FF6B6B)" opacity="0.7"/>
-    </svg>
   )
 }
 
