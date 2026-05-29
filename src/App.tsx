@@ -444,7 +444,7 @@ function App() {
 
   // Tic-Tac-Toe state
   const [tttBoard, setTttBoard] = useState<string[]>(Array(9).fill(''))
-  const [tttTurn, setTttTurn] = useState<'P' | 'J'>('P')
+  const [tttTurn, setTttTurn] = useState<'X' | 'O'>('X')
   const [tttWinner, setTttWinner] = useState<string | null>(null)
   const [tttWinningLine, setTttWinningLine] = useState<number[]>([])
   const [tttMode, setTttMode] = useState<'1p' | '2p'>('2p')
@@ -728,7 +728,7 @@ function App() {
   function tttMove(index: number) {
     if (tttBoard[index] || tttWinner || tttBotThinking) return
     // In 1P mode, the human always plays 'P' (first)
-    if (tttMode === '1p' && tttTurn !== 'P') return
+    if (tttMode === '1p' && tttTurn !== 'X') return
 
     const newBoard = [...tttBoard]
     newBoard[index] = tttTurn
@@ -740,7 +740,7 @@ function App() {
       setTttWinner(winner)
       setTttWinningLine(tttWinPatterns.find((p) => newBoard[p[0]] === winner && newBoard[p[1]] === winner && newBoard[p[2]] === winner) || [])
       addStars(3)
-      setMessage(`${winner === 'P' ? 'Player P' : 'Player J'} wins! Amazing!`)
+      setMessage(`${winner === 'X' ? 'X' : 'O'} wins! Amazing!`)
       return
     }
 
@@ -750,30 +750,30 @@ function App() {
       return
     }
 
-    setTttTurn(tttTurn === 'P' ? 'J' : 'P')
+    setTttTurn(tttTurn === 'X' ? 'O' : 'X')
   }
 
   // Auto-bot move in 1P mode
   useEffect(() => {
-    if (tttMode === '1p' && tttTurn === 'J' && !tttWinner && activeGame === 'tictactoe' && !tttBotThinking) {
+    if (tttMode === '1p' && tttTurn === 'O' && !tttWinner && activeGame === 'tictactoe' && !tttBotThinking) {
       setTttBotThinking(true)
       const timer = setTimeout(() => {
-        const bestMove = findBestMove([...tttBoard], 'J', 'P')
+        const bestMove = findBestMove([...tttBoard], 'O', 'X')
         if (bestMove >= 0) {
           const newBoard = [...tttBoard]
-          newBoard[bestMove] = 'J'
+          newBoard[bestMove] = 'O'
           setTttBoard(newBoard)
           const winner = checkWinner(newBoard)
           if (winner) {
             setTttWinner(winner)
             setTttWinningLine(tttWinPatterns.find((p) => newBoard[p[0]] === winner && newBoard[p[1]] === winner && newBoard[p[2]] === winner) || [])
             addStars(1)
-            setMessage('J wins! The bot got you!')
+            setMessage('O wins! The bot got you!')
           } else if (newBoard.every((c) => c !== '')) {
             setTttWinner('draw')
             setMessage("It's a draw! Nice defense!")
           } else {
-            setTttTurn('P')
+            setTttTurn('X')
           }
         }
         setTttBotThinking(false)
@@ -785,7 +785,7 @@ function App() {
 
   function tttReset() {
     setTttBoard(Array(9).fill(''))
-    setTttTurn('P')
+    setTttTurn('X')
     setTttWinner(null)
     setTttWinningLine([])
     setTttBotThinking(false)
@@ -795,7 +795,7 @@ function App() {
   function tttSetMode(mode: '1p' | '2p') {
     setTttMode(mode)
     tttReset()
-    setMessage(mode === '1p' ? '1 Player — you are P, bot is J!' : '2 Players — P vs J!')
+    setMessage(mode === '1p' ? '1 Player — you are X, bot is O!' : '2 Players — X vs O!')
   }
 
   // ===== DRAWING LOGIC (Pointer Events — unified touch+mouse, accurate on all devices) =====
@@ -1186,7 +1186,7 @@ function App() {
             <div className="challenge-card">
               <div className="game-card-topbar">
                 <div>
-                  <p className="round-count"><Icon name="P" size={16} /> vs <Icon name="J" size={16} /></p>
+                  <p className="round-count"><Icon name="X" size={18} /> vs <Icon name="O" size={18} /></p>
                   <h2>Tic-Tac-Toe</h2>
                 </div>
               </div>
@@ -1197,14 +1197,14 @@ function App() {
                   className={`ttt-mode-btn ${tttMode === '2p' ? 'active' : ''}`}
                   onClick={() => tttSetMode('2p')}
                   aria-label="Two player mode">
-                  <span className="ttt-mode-icon">👫</span>
+                  <Icon name="2players" size={24} />
                   <span className="ttt-mode-label">2 Players</span>
                 </button>
                 <button type="button"
                   className={`ttt-mode-btn ${tttMode === '1p' ? 'active' : ''}`}
                   onClick={() => tttSetMode('1p')}
                   aria-label="Play vs bot">
-                  <span className="ttt-mode-icon">🤖</span>
+                  <Icon name="robot" size={24} />
                   <span className="ttt-mode-label">vs Bot</span>
                 </button>
               </div>
@@ -1220,9 +1220,9 @@ function App() {
                   <button key={i} type="button"
                     className={`tictactoe-cell ${cell ? 'taken' : ''} ${tttWinningLine.includes(i) ? 'winning' : ''}`}
                     onClick={() => tttMove(i)}
-                    aria-label={cell === 'P' ? 'Player P' : cell === 'J' ? 'Player J' : `Empty cell ${i + 1}`}
+                    aria-label={cell === 'X' ? 'X' : cell === 'O' ? 'O' : `Empty cell ${i + 1}`}
                     disabled={!!cell || !!tttWinner || tttBotThinking}>
-                    {cell === 'P' ? <Icon name="P" size={52} /> : cell === 'J' ? <Icon name="J" size={52} /> : ''}
+                    {cell === 'X' ? <Icon name="X" size={64} /> : cell === 'O' ? <Icon name="O" size={64} /> : ''}
                   </button>
                 ))}
               </div>

@@ -1041,10 +1041,6 @@
   box-shadow: 0 4px 14px rgba(170, 150, 218, 0.3);
 }
 
-.ttt-mode-icon {
-  font-size: 1.2rem;
-}
-
 .tictactoe-board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
