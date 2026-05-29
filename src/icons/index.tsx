@@ -322,6 +322,8 @@ const iconMap = {
   '🧮': IconAbacus,
   '💡': IconLightbulb,
   '✨': IconSparkle,
+  'P': TicTacP,
+  'J': TicTacJ,
 }
 
 // Fallback for emojis that don't have a mapped icon
@@ -352,6 +354,72 @@ export function EmojiIcon({ emoji, size = 36, className = '' }: { emoji: string;
     }} role="img">
       {emoji}
     </span>
+  )
+}
+
+// ===== TIC-TAC-TOE PREMIUM PLAYER ICONS =====
+// Premium SVG icons — polished gradient circles with letter initials, much better than emoji
+
+export function TicTacP({ size = 52, className }: IconProps) {
+  const s = size
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width={s} height={s} className={className}>
+      <defs>
+        <radialGradient id="pGrad" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#7EE8FA"/>
+          <stop offset="50%" stopColor="#6BCB77"/>
+          <stop offset="100%" stopColor="#4A9B56"/>
+        </radialGradient>
+        <filter id="pShadow">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(0,0,0,0.15)"/>
+        </filter>
+      </defs>
+      {/* Outer ring */}
+      <circle cx="260" cy="260" r="250" fill="url(#pGrad)" filter="url(#pShadow)"/>
+      <circle cx="260" cy="260" r="235" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="4"/>
+      <circle cx="260" cy="260" r="220" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2"/>
+      {/* Decorative dots */}
+      <circle cx="260" cy="50" r="6" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="260" cy="470" r="6" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="50" cy="260" r="6" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="470" cy="260" r="6" fill="rgba(255,255,255,0.4)"/>
+      {/* Letter P */}
+      <path d="M170 380V140h80q30 0 52 12t32 32 10 44q0 24-10 44t-32 32-52 12h-60v64zm50-104h24q20 0 32-10t12-28q0-18-12-28t-32-10h-24z" fill="white"/>
+      {/* Sparkle accent */}
+      <circle cx="380" cy="130" r="12" fill="rgba(255,255,255,0.5)"/>
+      <path d="M380 108v44M358 130h44" stroke="rgba(255,255,255,0.5)" strokeWidth="3" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+export function TicTacJ({ size = 52, className }: IconProps) {
+  const s = size
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width={s} height={s} className={className}>
+      <defs>
+        <radialGradient id="jGrad" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#FF9A9E"/>
+          <stop offset="50%" stopColor="#FF6B6B"/>
+          <stop offset="100%" stopColor="#E04A4A"/>
+        </radialGradient>
+        <filter id="jShadow">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(0,0,0,0.15)"/>
+        </filter>
+      </defs>
+      {/* Outer ring */}
+      <circle cx="260" cy="260" r="250" fill="url(#jGrad)" filter="url(#jShadow)"/>
+      <circle cx="260" cy="260" r="235" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="4"/>
+      <circle cx="260" cy="260" r="220" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2"/>
+      {/* Decorative dots */}
+      <circle cx="260" cy="50" r="6" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="260" cy="470" r="6" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="50" cy="260" r="6" fill="rgba(255,255,255,0.4)"/>
+      <circle cx="470" cy="260" r="6" fill="rgba(255,255,255,0.4)"/>
+      {/* Letter J — swirl with curve */}
+      <path d="M220 140h80q15 0 25 10t10 25v150q0 35-18 55t-50 20q-30 0-50-18t-20-46h50q0 12 8 20t20 8q12 0 20-8t6-22V180H220Z" fill="white"/>
+      {/* Star accent */}
+      <polygon points="370,120 375,135 390,135 378,145 382,160 370,152 358,160 362,145 350,135 365,135" fill="rgba(255,255,255,0.5)"/>
+    </svg>
   )
 }
 
