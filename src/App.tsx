@@ -69,52 +69,50 @@ function numberChoices(correct: number): string[] {
 }
 
 const mathQuestions: ChoiceRound[] = [
-  ...Array.from({ length: 60 }, (_, index) => {
-    const a = (index % 20) + 1
-    const b = (index % 6) + 1
-    const correct = a + b
-    return { prompt: `${a} + ${b} = ?`, answers: numberChoices(correct), correct: String(correct) }
+  ...Array.from({ length: 40 }, (_, i) => {
+    const a = (i % 20) + 15; const b = (i % 12) + 8; const c = a + b
+    return { prompt: `${a} + ${b} = ?`, answers: [String(c), String(c + (i % 5 + 1)), String(Math.max(1, c - (i % 4 + 1)))], correct: String(c) }
   }),
-  ...Array.from({ length: 60 }, (_, index) => {
-    const b = (index % 8) + 1
-    const correct = (index % 20) + 1
-    const a = correct + b
-    return { prompt: `${a} - ${b} = ?`, answers: numberChoices(correct), correct: String(correct) }
+  ...Array.from({ length: 40 }, (_, i) => {
+    const a = (i % 30) + 25; const b = (i % 10) + 5; const c = a - b
+    return { prompt: `${a} - ${b} = ?`, answers: [String(c), String(c + (i % 4 + 1)), String(Math.max(1, c - (i % 3 + 1)))], correct: String(c) }
   }),
-  ...Array.from({ length: 40 }, (_, index) => {
-    const a = (index % 9) + 2
-    const b = (index % 5) + 2
-    const correct = a * b
-    return { prompt: `${a} × ${b} = ?`, answers: [String(correct), String(correct + a), String(Math.max(1, correct - b))], correct: String(correct) }
+  ...Array.from({ length: 40 }, (_, i) => {
+    const a = (i % 9) + 3; const b = (i % 7) + 3; const c = a * b
+    return { prompt: `${a} × ${b} = ?`, answers: [String(c), String(c + a), String(Math.max(1, c - b))], correct: String(c) }
+  }),
+  ...Array.from({ length: 30 }, (_, i) => {
+    const b = (i % 6) + 3; const c = (i % 8) + 3; const a = b * c
+    return { prompt: `${a} ÷ ${b} = ?`, answers: [String(c), String(c + 1), String(Math.max(1, c - 1))], correct: String(c) }
   }),
 ]
 
 const scienceFacts: [string, string, string[]][] = [
-  ['Which planet is known as the Red Planet?', 'Mars', ['Mars', 'Venus', 'Jupiter']],
-  ['What do plants need to make food?', 'Sunlight', ['Sunlight', 'Moon rocks', 'Plastic']],
-  ['Water can be solid, liquid, and...', 'Gas', ['Gas', 'Metal', 'Wood']],
-  ['What animal is known for black and white stripes?', 'Zebra', ['Zebra', 'Lion', 'Frog']],
-  ['Which part of a plant takes in water?', 'Roots', ['Roots', 'Petals', 'Clouds']],
-  ['What do bees make?', 'Honey', ['Honey', 'Milk', 'Bread']],
-  ['Which star gives Earth light?', 'The Sun', ['The Sun', 'Sirius', 'Polaris']],
-  ['What do lungs help us do?', 'Breathe', ['Breathe', 'Paint', 'Jump rope']],
-  ['Which sense uses your ears?', 'Hearing', ['Hearing', 'Taste', 'Touch']],
-  ['What does ice become when it melts?', 'Water', ['Water', 'Sand', 'Smoke']],
-  ['Which animal lays eggs?', 'Chicken', ['Chicken', 'Cat', 'Horse']],
-  ['What do magnets stick to best?', 'Metal', ['Metal', 'Paper', 'Air']],
-  ['What shape is planet Earth most like?', 'Sphere', ['Sphere', 'Cube', 'Triangle']],
-  ['What do fish use to breathe underwater?', 'Gills', ['Gills', 'Wings', 'Paws']],
-  ['What season is usually cold and snowy?', 'Winter', ['Winter', 'Summer', 'Spring']],
-  ['Which tool helps us see tiny things?', 'Microscope', ['Microscope', 'Fork', 'Backpack']],
-  ['What falls from clouds as rain or snow?', 'Water', ['Water', 'Leaves', 'Rocks']],
-  ['Which animal can change into a butterfly?', 'Caterpillar', ['Caterpillar', 'Puppy', 'Penguin']],
-  ['What do birds use to fly?', 'Wings', ['Wings', 'Fins', 'Hands']],
-  ['What force pulls things down?', 'Gravity', ['Gravity', 'Glitter', 'Music']],
-  ['Which object helps you measure temperature?', 'Thermometer', ['Thermometer', 'Ruler', 'Crayon']],
-  ['What do cows make that people drink?', 'Milk', ['Milk', 'Juice', 'Tea']],
-  ['Which natural object orbits Earth?', 'The Moon', ['The Moon', 'A tree', 'A cloud']],
-  ['What do we call baby frogs?', 'Tadpoles', ['Tadpoles', 'Kittens', 'Calves']],
-  ['Which gas do people breathe in to live?', 'Oxygen', ['Oxygen', 'Helium', 'Smoke']],
+  ['What gas makes up most of Earth\'s atmosphere?', 'Nitrogen', ['Nitrogen', 'Oxygen', 'Carbon dioxide']],
+  ['How long does it take Earth to orbit the Sun?', '365 days', ['365 days', '24 hours', '7 days']],
+  ['What is the largest organ in the human body?', 'Skin', ['Skin', 'Liver', 'Brain']],
+  ['What force keeps planets orbiting the Sun?', 'Gravity', ['Gravity', 'Magnetism', 'Friction']],
+  ['What is the chemical symbol for gold?', 'Au', ['Au', 'Go', 'Gd']],
+  ['How many bones are in the adult human body?', '206', ['206', '300', '150']],
+  ['What planet spins the fastest in our solar system?', 'Jupiter', ['Jupiter', 'Saturn', 'Neptune']],
+  ['What is the boiling point of water in Celsius?', '100°C', ['100°C', '0°C', '50°C']],
+  ['Which animal is the largest on Earth?', 'Blue whale', ['Blue whale', 'Elephant', 'Giraffe']],
+  ['What type of rock forms from cooled lava?', 'Igneous', ['Igneous', 'Sedimentary', 'Metamorphic']],
+  ['How many chromosomes do humans have?', '46', ['46', '23', '48']],
+  ['What is the speed of light in km/s?', '300,000', ['300,000', '150,000', '500,000']],
+  ['Which planet has the most moons?', 'Saturn', ['Saturn', 'Jupiter', 'Uranus']],
+  ['What is the largest desert on Earth?', 'Antarctica', ['Antarctica', 'Sahara', 'Gobi']],
+  ['How many teeth does an adult human have?', '32', ['32', '28', '36']],
+  ['What is the smallest continent?', 'Australia', ['Australia', 'Europe', 'Antarctica']],
+  ['What is the most abundant gas in the universe?', 'Hydrogen', ['Hydrogen', 'Helium', 'Oxygen']],
+  ['How many chambers does a human heart have?', '4', ['4', '3', '5']],
+  ['What element makes up 78% of Earth\'s atmosphere?', 'Nitrogen', ['Nitrogen', 'Oxygen', 'Argon']],
+  ['What is the longest river in the world?', 'Nile', ['Nile', 'Amazon', 'Mississippi']],
+  ['How far is the Sun from Earth in million km?', '150', ['150', '300', '50']],
+  ['What is the human body\'s largest internal organ?', 'Liver', ['Liver', 'Heart', 'Brain']],
+  ['What causes the Northern Lights?', 'Solar wind', ['Solar wind', 'Moon gravity', 'Ocean currents']],
+  ['How many taste buds does the human tongue have?', '10,000', ['10,000', '1,000', '100,000']],
+  ['Which animal can regrow its limbs?', 'Axolotl', ['Axolotl', 'Lizard', 'Starfish']],
 ]
 
 const scienceQuestions: ChoiceRound[] = Array.from({ length: 125 }, (_, index) => {
@@ -148,7 +146,6 @@ const colorRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
     helper: `Color round ${index + 1} of 120`,
   }
 })
-
 const countEmojis = ['⭐', '🚗', '🍎', '🦖', '🧸', '🎈', '🐠', '🌼', '🚀', '🦋']
 const countingRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
   const count = (index % 10) + 1
@@ -163,17 +160,17 @@ const countingRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => 
 
 const shapeItems = [
   ['⚪', 'Circle'], ['🟦', 'Square'], ['🔺', 'Triangle'], ['⭐', 'Star'], ['❤️', 'Heart'], ['💎', 'Diamond'], ['🥚', 'Oval'], ['▭', 'Rectangle'],
+  ['⬠', 'Pentagon'], ['⬡', 'Hexagon'], ['🔶', 'Octagon'], ['🌙', 'Crescent'], ['➕', 'Cross'], ['▶', 'Arrow'], ['▱', 'Parallelogram'], ['🌀', 'Spiral'],
 ]
-const shapeRounds: ChoiceRound[] = Array.from({ length: 120 }, (_, index) => {
+const shapeRounds: ChoiceRound[] = Array.from({ length: 180 }, (_, index) => {
   const [shape, correct] = shapeItems[index % shapeItems.length]
   return {
     prompt: `${shape} What shape is this?`,
-    answers: [correct, shapeItems[(index + 2) % shapeItems.length][1], shapeItems[(index + 5) % shapeItems.length][1]],
+    answers: [correct, shapeItems[(index + 3) % shapeItems.length][1], shapeItems[(index + 7) % shapeItems.length][1]],
     correct,
-    helper: `Shape round ${index + 1} of 120`,
+    helper: `Shape round ${index + 1} of 180`,
   }
 })
-
 const animalSounds = [
   ['🐶', 'Woof'], ['🐱', 'Meow'], ['🐮', 'Moo'], ['🐷', 'Oink'], ['🐸', 'Ribbit'], ['🐥', 'Chirp'], ['🦁', 'Roar'], ['🐴', 'Neigh'], ['🐍', 'Hiss'], ['🐑', 'Baa'],
 ]
@@ -323,7 +320,7 @@ const typingLetterSets = {
     { display: 'V', input: 'v' }, { display: 'W', input: 'w' }, { display: 'X', input: 'x' },
     { display: 'Y', input: 'y' }, { display: 'Z', input: 'z' },
   ],
-  words: ['CAT', 'DOG', 'SUN', 'FISH', 'BIRD', 'STAR', 'MOON', 'BALL', 'TREE', 'BOOK', 'APPLE', 'HAPPY', 'SMILE', 'WATER', 'PLAY'],
+  words: ['CAT', 'DOG', 'SUN', 'FISH', 'BIRD', 'STAR', 'MOON', 'BALL', 'TREE', 'BOOK', 'APPLE', 'HAPPY', 'SMILE', 'WATER', 'PLAY', 'PLANET', 'BRIDGE', 'CLOUD', 'DREAM', 'EAGLE', 'FLAME', 'GRASS', 'HEART', 'JUICE', 'KNIFE', 'LEMON', 'MAGIC', 'NIGHT', 'OCEAN', 'PIANO', 'QUEEN', 'RIVER', 'STONE', 'TIGER', 'UNCLE', 'VIOLA', 'WHALE', 'ZEBRA', 'WINTER', 'SUMMER', 'SCHOOL', 'FOREST', 'ROCKET', 'BASKET', 'MARKET', 'PENCIL', 'RABBIT', 'TURTLE', 'CASTLE', 'GARDEN', 'ISLAND', 'MONKEY', 'NUMBER'],
 }
 
 // ===== HELPER FUNCTIONS =====
@@ -1296,7 +1293,7 @@ function App() {
               <div className={`custom-game-art art-bubbles`} aria-hidden="true"><span></span><span></span><span></span><span></span></div>
               <p className="question bubble-instruction">Pop exactly <strong>{bubbleTarget}</strong> bubbles</p>
               <div className="bubble-board" aria-label={`Pop exactly ${bubbleTarget} bubbles`}>
-                {Array.from({ length: 12 }, (_, index) => (
+                {Array.from({ length: 16 }, (_, index) => (
                   <button key={index} type="button"
                     className={poppedBubbles.includes(index) ? 'bubble popped' : 'bubble'}
                     onClick={() => popBubble(index)}
